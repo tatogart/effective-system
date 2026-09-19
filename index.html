@@ -432,11 +432,155 @@ input,textarea,select{font:inherit;color:inherit}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
+<style>
+/* ============ живые обои ============ */
+#wallcv{position:absolute;inset:0;width:100%;height:100%;z-index:0;display:block}
+#os[data-wall="space"] #desk{background:linear-gradient(175deg, oklch(18% .06 calc(var(--acc-h) + 40)), oklch(8% .03 calc(var(--acc-h) + 90)))}
+#os[data-wall="flow"] #desk{background:linear-gradient(160deg, oklch(24% .07 var(--acc-h)), oklch(12% .04 calc(var(--acc-h) + 60)))}
+
+/* ============ анимации окон ============ */
+@keyframes winIn{from{opacity:0;transform:scale(.96) translateY(10px)}to{opacity:1;transform:none}}
+@keyframes winOut{to{opacity:0;transform:scale(.94) translateY(14px)}}
+.win.closing{animation:winOut .13s ease-in forwards;pointer-events:none}
+/* превью на панели задач */
+.tprev{position:absolute;z-index:330;background:var(--glass);backdrop-filter:blur(22px) saturate(160%);border:1px solid var(--glass-line);
+  border-radius:12px;box-shadow:var(--pop-shadow);padding:10px 12px;min-width:186px;display:flex;flex-direction:column;gap:7px;pointer-events:none}
+.tprev b{font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px}
+.tprev span{font-size:11.5px;color:var(--txt-2)}
+.tprev i{display:block;height:54px;border-radius:7px;border:1px solid var(--line);background:
+  linear-gradient(var(--surf-2),var(--surf-3));position:relative;overflow:hidden}
+.tprev i::before{content:"";position:absolute;left:0;right:0;top:0;height:11px;background:var(--acc-soft);border-bottom:1px solid var(--line)}
+
+/* ============ представление задач ============ */
+#taskviewL{position:absolute;inset:0;bottom:0;z-index:70;background:oklch(14% .03 var(--acc-h) / .66);backdrop-filter:blur(16px);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:22px}
+.tv-g{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;max-width:100%}
+.tv-d{width:230px;border-radius:12px;border:1.5px solid oklch(100% 0 0 / .18);background:oklch(100% 0 0 / .08);padding:11px;text-align:left;color:oklch(97% 0 0);position:relative}
+.tv-d.on{border-color:var(--acc);background:oklch(100% 0 0 / .16)}
+.tv-d b{display:block;font-size:12.5px;margin-bottom:7px}
+.tv-d ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px;min-height:52px}
+.tv-d li{font-size:11.5px;opacity:.85;display:flex;align-items:center;gap:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.tv-d .rm{position:absolute;top:6px;right:6px;width:22px;height:22px;border-radius:6px;display:grid;place-items:center;color:oklch(97% 0 0 / .7)}
+.tv-d .rm:hover{background:oklch(100% 0 0 / .18)}
+.tv-add{width:96px;border-radius:12px;border:1.5px dashed oklch(100% 0 0 / .3);color:oklch(97% 0 0);display:grid;place-items:center}
+.tv-add:hover{background:oklch(100% 0 0 / .1)}
+.tv-h{color:oklch(97% 0 0);font-size:13px;opacity:.8}
+#vdbar{display:flex;align-items:center;gap:3px}
+.vdot{width:22px;height:22px;border-radius:7px;display:grid;place-items:center;font-size:11px;color:var(--txt-2);font-variant-numeric:tabular-nums}
+.vdot.on{background:var(--acc);color:var(--acc-fg);font-weight:700}
+
+/* ============ выполнить ============ */
+#run{position:absolute;inset:0;z-index:340;display:grid;place-items:center;background:oklch(14% .03 var(--acc-h) / .3)}
+.run-c{width:min(440px,calc(100vw - 28px));background:var(--surf);border:1px solid var(--line);border-radius:14px;box-shadow:var(--pop-shadow);padding:18px;display:flex;flex-direction:column;gap:12px}
+.run-c h3{margin:0;font-size:15px;display:flex;align-items:center;gap:9px}
+.run-c p{margin:0;font-size:12.5px;color:var(--txt-2);line-height:1.55}
+.run-c input{padding:9px 11px;border-radius:9px;border:1px solid var(--line);background:var(--surf-2);outline:none;font-family:var(--f-mono);font-size:13px}
+.run-c input:focus{border-color:var(--acc)}
+
+/* ============ уведомления ============ */
+.bell{position:relative}
+.bell.has::after{content:"";position:absolute;top:6px;right:6px;width:7px;height:7px;border-radius:50%;background:var(--acc);border:1.5px solid var(--glass)}
+.nlist{display:flex;flex-direction:column;gap:6px;min-width:250px;max-width:300px;max-height:46vh;overflow:auto}
+.nitem{display:flex;gap:9px;padding:9px 10px;border-radius:9px;background:var(--surf);border:1px solid var(--line);font-size:12.5px;line-height:1.4}
+.nitem time{margin-left:auto;font-size:11px;color:var(--txt-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ============ стикеры ============ */
+#notes{position:absolute;inset:0;z-index:3;pointer-events:none}
+.note{position:absolute;pointer-events:auto;width:196px;border-radius:12px;box-shadow:0 14px 34px -14px oklch(20% 0 0 / .6);display:flex;flex-direction:column;overflow:hidden}
+.note .nh{height:26px;flex:0 0 auto;display:flex;align-items:center;justify-content:flex-end;gap:2px;padding:0 4px;cursor:move;touch-action:none;background:oklch(0% 0 0 / .07)}
+.note .nh button{width:20px;height:20px;border-radius:5px;display:grid;place-items:center;color:oklch(22% .04 80 / .7)}
+.note .nh button:hover{background:oklch(0% 0 0 / .12)}
+.note textarea{border:0;outline:none;background:none;resize:none;min-height:118px;padding:9px 11px 12px;font-family:var(--f-ui);font-size:12.5px;line-height:1.5;color:oklch(24% .05 80)}
+
+/* ============ косынка ============ */
+.sol{flex:1;min-height:0;overflow:auto;padding:14px;background:
+  radial-gradient(120% 90% at 50% -10%, oklch(42% .09 155), oklch(26% .07 160))}
+.sol-r{display:flex;gap:9px;margin-bottom:16px}
+.sol-t{display:flex;gap:9px;align-items:flex-start}
+.pile{width:64px;flex:0 0 auto;position:relative;min-height:90px}
+.slot{width:64px;height:90px;border-radius:8px;border:1.5px dashed oklch(100% 0 0 / .3);display:grid;place-items:center;color:oklch(100% 0 0 / .35)}
+.pcard{position:absolute;left:0;width:64px;height:90px;border-radius:8px;background:#fdfbf7;border:1px solid oklch(20% 0 0 / .25);
+  box-shadow:0 2px 6px oklch(20% 0 0 / .28);padding:5px 6px;font-family:var(--f-ui);font-weight:700;font-size:14px;line-height:1.05;text-align:left;cursor:pointer}
+.pcard .sm{font-size:17px;display:block;margin-top:1px}
+.pcard .big{position:absolute;right:6px;bottom:4px;font-size:23px;opacity:.9}
+.pcard.red{color:oklch(50% .19 25)}
+.pcard.black{color:oklch(26% .02 240)}
+.pcard.back{background:repeating-linear-gradient(45deg, oklch(45% .1 var(--acc-h)) 0 6px, oklch(38% .09 var(--acc-h)) 6px 12px);border-color:oklch(30% .05 var(--acc-h))}
+.pcard.sel{outline:2.5px solid oklch(85% .17 90);outline-offset:1px;translate:0 -7px}
+.sol-b{display:flex;align-items:center;gap:9px;flex-wrap:wrap}
+.sol-b .btn{background:oklch(100% 0 0 / .12);border-color:oklch(100% 0 0 / .2);color:#fff}
+.sol-b .btn:hover{background:oklch(100% 0 0 / .22)}
+.sol-i{color:oklch(97% 0 0);font-size:12.5px;display:flex;gap:14px;font-variant-numeric:tabular-nums}
+
+/* ============ браузер ============ */
+.br{flex:1;min-height:0;display:flex;flex-direction:column}
+.br-c{flex:0 0 auto;display:flex;gap:6px;align-items:center;padding:8px;background:var(--surf-2);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.br-u{flex:1;min-width:150px;display:flex;align-items:center;gap:8px;background:var(--surf);border:1px solid var(--line);border-radius:99px;padding:6px 13px}
+.br-u input{flex:1;min-width:0;border:0;background:none;outline:none;font-size:12.5px;font-family:var(--f-mono)}
+.br-b{flex:0 0 auto;display:flex;gap:4px;padding:6px 8px;background:var(--surf-2);border-bottom:1px solid var(--line);overflow-x:auto}
+.br-b button{font-size:11.5px;padding:4px 10px;border-radius:7px;white-space:nowrap;color:var(--txt-2);display:flex;align-items:center;gap:6px}
+.br-b button:hover{background:var(--surf-3);color:var(--txt)}
+.br iframe{flex:1;min-height:0;border:0;background:#fff;width:100%}
+
+/* ============ часы ============ */
+.ck{flex:1;min-height:0;display:flex;flex-direction:column}
+.ck-t{flex:0 0 auto;display:flex;gap:3px;padding:8px;background:var(--surf-2);border-bottom:1px solid var(--line)}
+.ck-t button{padding:7px 13px;border-radius:8px;font-size:12.5px}
+.ck-t button.on{background:var(--acc);color:var(--acc-fg);font-weight:500}
+.ck-b{flex:1;min-height:0;overflow:auto;padding:18px;display:flex;flex-direction:column;align-items:center;gap:14px}
+.ck-big{font-size:clamp(34px,9vw,54px);font-weight:700;letter-spacing:-.02em;font-variant-numeric:tabular-nums;line-height:1}
+.ck-sub{color:var(--txt-2);font-size:12.5px}
+.ck-w{width:100%;max-width:330px;display:flex;flex-direction:column;gap:6px}
+.ck-wr{display:flex;align-items:center;gap:10px;font-size:12.5px;padding:7px 11px;border-radius:9px;background:var(--surf-2);border:1px solid var(--line)}
+.ck-wr b{margin-left:auto;font-variant-numeric:tabular-nums}
+.ring{width:170px;height:170px;border-radius:50%;display:grid;place-items:center;
+  background:conic-gradient(var(--acc) calc(var(--p,0) * 1%), var(--surf-3) 0);position:relative}
+.ring::after{content:"";position:absolute;inset:11px;border-radius:50%;background:var(--surf)}
+.ring b{position:relative;z-index:1;font-size:27px;font-weight:700;font-variant-numeric:tabular-nums}
+.laps{width:100%;max-width:330px;display:flex;flex-direction:column;gap:3px;font-size:12.5px;font-variant-numeric:tabular-nums}
+.laps div{display:flex;justify-content:space-between;padding:5px 9px;border-radius:7px;background:var(--surf-2)}
+
+/* ============ центр обновления ============ */
+.upd{flex:1;min-height:0;overflow:auto;padding:20px;display:flex;flex-direction:column;gap:16px}
+.upd-h{display:flex;gap:14px;align-items:flex-start}
+.upd-h .ci{width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--acc-soft);color:var(--acc);flex:0 0 auto}
+.upd-h h2{margin:0 0 3px;font-size:18px}
+.upd-h p{margin:0;font-size:12.5px;color:var(--txt-2)}
+.upd-log{font-family:var(--f-mono);font-size:11.5px;line-height:1.7;color:var(--txt-2);max-height:140px;overflow:auto;white-space:pre-wrap}
+
+/* ============ диспетчер: графики ============ */
+.graphs{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;padding:11px;background:var(--surf-2);border-bottom:1px solid var(--line)}
+.graph{background:var(--surf);border:1px solid var(--line);border-radius:10px;padding:9px 10px 6px;position:relative}
+.graph .gh{display:flex;align-items:baseline;gap:8px;margin-bottom:4px}
+.graph .gh span{font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--txt-2)}
+.graph .gh b{font-size:15px;font-variant-numeric:tabular-nums;margin-left:auto}
+.graph canvas{width:100%;height:62px;display:block}
+.graph .gt{position:absolute;pointer-events:none;background:var(--surf);border:1px solid var(--line);border-radius:7px;
+  padding:3px 7px;font-size:11px;box-shadow:var(--pop-shadow);white-space:nowrap;font-variant-numeric:tabular-nums}
+
+/* ============ проводник: список ============ */
+.files.list{display:flex;flex-direction:column;gap:1px;padding:6px}
+.files.list .fitem{flex-direction:row;align-items:center;gap:10px;padding:7px 10px;text-align:left;width:100%}
+.files.list .fitem span:last-child{-webkit-line-clamp:1;text-align:left;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fitem input{width:100%;font:inherit;font-size:11.5px;text-align:center;border:1px solid var(--acc);border-radius:5px;background:var(--surf);padding:2px 3px;outline:none}
+.files.list .fitem input{text-align:left}
+
+/* ============ кисть: инструменты ============ */
+.tool-b{width:32px;height:30px;border-radius:8px;border:1px solid var(--line);background:var(--surf);display:grid;place-items:center;color:var(--txt-2)}
+.tool-b:hover{background:var(--surf-3)}
+.tool-b.on{background:var(--acc);border-color:transparent;color:var(--acc-fg)}
+@media (max-width:760px){
+  .tv-d{width:100%;max-width:300px}
+  .note{width:170px}
+}
+</style>
 </head>
 <body>
 <div id="os" data-wall="dusk" hidden>
   <div id="desk">
+    <canvas id="wallcv" aria-hidden="true"></canvas>
     <div id="icons"></div>
+    <div id="notes"></div>
     <div id="windows"></div>
     <div id="snap"></div>
     <button id="mark" hidden><b>Активируйте Фенестру</b>Параметры → Активация</button>
@@ -446,10 +590,13 @@ input,textarea,select{font:inherit;color:inherit}
     <div class="bar-l"><span>Фенестра 9</span></div>
     <div class="bar-c">
       <button class="tbtn" id="startbtn" aria-label="Пуск" title="Пуск (клавиша Win)"></button>
+      <button class="tbtn" id="taskview" aria-label="Представление задач" title="Представление задач"></button>
       <div id="tasks"></div>
     </div>
     <div class="bar-r">
+      <div id="vdbar"></div>
       <div class="tray">
+        <button id="tr-bell" class="bell" title="Уведомления"></button>
         <button id="tr-theme" title="Тема оформления"></button>
         <button id="tr-net" title="Сеть"></button>
         <button id="tr-vol" title="Звук интерфейса"></button>
@@ -457,6 +604,8 @@ input,textarea,select{font:inherit;color:inherit}
       <button id="clock"><b>--:--</b><i>--.--.----</i></button>
     </div>
   </div>
+  <div id="taskviewL" hidden></div>
+  <div id="run" hidden></div>
   <div id="lock" hidden>
     <div>
       <div class="lt">--:--</div>
@@ -555,7 +704,7 @@ const LOGO='<svg viewBox="0 0 48 48" width="56" height="56" aria-hidden="true"><
 /* ---------------- состояние ---------------- */
 const KEY='fenestra.v3';
 const state={theme:'system',accent:'teal',wall:'dusk',vol:0,installed:false,activated:false,key:'',user:'Гость',
-             disk:'ДИСК 0 · ФЕНЕСТРА (C:)',since:'',best:0,corners:0};
+             disk:'ДИСК 0 · ФЕНЕСТРА (C:)',since:'',best:0,corners:0,ver:'9.0',notes:[],alarm:null,solBest:null,pendingUpd:''};
 const ROOTS=['Рабочий стол','Документы','Изображения','Музыка'];
 const BIN='Корзина';
 let fs=null, bin=[];
@@ -564,21 +713,33 @@ function defaultFs(){
   return {t:'d',c:{
     'Рабочий стол':{t:'d',c:{
       'привет.txt':{t:'f',body:
-'Фенестра 9 — рабочий стол, который целиком живёт в одной HTML-странице.\n'+
+'Фенестра — рабочий стол, который целиком живёт в одной HTML-странице.\n'+
 'Ни сервера, ни сборки: разметка, стили и немного скрипта.\n\n'+
+'Окна\n'+
+'  Потяните окно за заголовок к левому или правому краю — оно прилипнет\n'+
+'  к половине экрана, к верхнему — развернётся на весь стол.\n'+
+'  Двойной клик по значку открывает его, правый клик — меню.\n\n'+
+'Клавиши\n'+
+'  Win — «Пуск»            Win+R — выполнить\n'+
+'  Ctrl+Alt+Del — задачи   Alt+Tab — переключение окон\n'+
+'  F5 — обновить стол      F8 при загрузке — среда восстановления\n\n'+
 'Что стоит попробовать\n'+
-'  1. Потяните окно за заголовок к левому или правому краю — оно прилипнет\n'+
-'     к половине экрана. К верхнему краю — развернётся на весь стол.\n'+
-'  2. Двойной клик по значку на столе открывает его, правый клик — меню.\n'+
-'  3. Ctrl+Alt+Del — диспетчер задач. Alt+Tab — переключение окон.\n'+
-'     Клавиша Win — меню «Пуск». F8 при загрузке — среда восстановления.\n'+
-'  4. Терминал знает ls, cd, cat, mkdir, open, theme, neofetch,\n'+
+'  1. Кнопка рядом с «Пуском» — представление задач: несколько рабочих\n'+
+'     столов, окна можно раскидать по ним.\n'+
+'  2. Браузер «Фенестрит» открывает файлы с диска: создайте HTML-страницу\n'+
+'     кнопкой «Создать страницу», поправьте её в Блокноте и обновите.\n'+
+'  3. Косынка — та самая. Двойной клик отправляет карту в дом,\n'+
+'     «Автосбор» дособирает остальное.\n'+
+'  4. Параметры → Обои: «Космос» и «Поток» живые, они рисуются в canvas.\n'+
+'  5. Кисть умеет линии, прямоугольники, эллипсы, заливку, пипетку\n'+
+'     и отмену по Ctrl+Z. Сохранённый рисунок появится в Изображениях.\n'+
+'  6. Правый клик по столу — «Новый стикер»: записка, которая останется\n'+
+'     после перезагрузки.\n'+
+'  7. Терминал знает ls, cd, cat, mkdir, open, theme, neofetch,\n'+
 '     а ещё matrix, party и crash. Последнюю — на свой страх и риск.\n'+
-'  5. Нарисуйте что-нибудь в Кисти и сохраните — файл появится\n'+
-'     в Изображениях и откроется в Фото.\n'+
-'  6. Ничего не трогайте полторы минуты — включится заставка.\n\n'+
+'  8. Ничего не трогайте полторы минуты — включится заставка.\n\n'+
 'Удалённые файлы попадают в Корзину, оттуда их можно вернуть.\n'+
-'Файлы, окна и настройки хранятся в localStorage этого браузера.\n'},
+'Файлы, окна, стикеры и настройки хранятся в localStorage этого браузера.\n'},
       'задачи.md':{t:'f',body:
 '# Задачи на неделю\n\n'+
 '- [x] Оболочка: окна, панель задач, меню «Пуск»\n'+
@@ -689,6 +850,10 @@ function applyChrome(){
   $('#tr-vol').innerHTML=ico(state.vol?'vol':'mute',17);
   $('#tr-net').innerHTML=ico('wifi',17);
   $('#mark').hidden=!!state.activated;
+  $('#startbtn').innerHTML=ico('start',20);
+  $('#taskview').innerHTML=ico('grid',19);
+  wallpaper(state.wall);
+  renderBell();
 }
 function setTheme(t){ state.theme=t; applyChrome(); save(); settingsRefresh(); }
 
@@ -724,6 +889,7 @@ function menu(x,y,items){
 }
 D.addEventListener('pointerdown',e=>{ if(!e.target.closest('.pop,.menu,#smenu,#startbtn,.tray button,#clock')) closePops(); },true);
 function toast(msg){
+  pushNotif(msg);
   const t=h('div',{class:'toast'},msg);
   $('#toasts').append(t);
   setTimeout(()=>{ t.style.transition='opacity .3s'; t.style.opacity='0'; setTimeout(()=>t.remove(),320); },2600);
@@ -743,7 +909,7 @@ function focus(w){
 }
 function unmin(w){ if(!w.min) return; w.min=false; w.node.hidden=false; syncTasks(); }
 function focusTop(){
-  let top=null; wins.forEach(o=>{ if(!o.min&&(!top||+o.node.style.zIndex>+top.node.style.zIndex)) top=o; });
+  let top=null; wins.forEach(o=>{ if(!o.min&&o.vd===curVD&&(!top||+o.node.style.zIndex>+top.node.style.zIndex)) top=o; });
   if(top) focus(top); else { active=null; syncTasks(); }
 }
 function setMin(w){ w.min=true; w.node.hidden=true; w.node.classList.remove('act'); if(active===w) active=null; focusTop(); }
@@ -763,14 +929,16 @@ function setMax(w,on){
 }
 function closeWin(w){
   if(w.api.onClose) try{ w.api.onClose(); }catch(e){}
-  w.node.remove(); w.taskBtn.remove(); wins.delete(w.id);
+  hidePrev();
+  const n=w.node; n.classList.add('closing'); setTimeout(()=>n.remove(),140);
+  w.taskBtn.remove(); wins.delete(w.id);
   if(w.watcher) fsWatchers.delete(w.watcher);
   if(active===w) active=null;
   focusTop(); blip(320,.06,.14);
 }
 function openWin(id,arg){
   const app=APPS[id]; if(!app) return null;
-  if(app.single) for(const w of wins.values()) if(w.app===id){ unmin(w); focus(w); if(app.reopen&&arg) app.reopen(w,arg); return w; }
+  if(app.single) for(const w of wins.values()) if(w.app===id){ if(w.vd!==curVD) moveWin(w,curVD); unmin(w); focus(w); if(app.reopen&&arg) app.reopen(w,arg); return w; }
   const d=deskSize();
   const ww=Math.min(app.w||660,Math.max(280,d.w-20)), wh=Math.min(app.h||460,Math.max(200,d.h-20));
   const off=(wins.size%6)*28, startX=d.w>1100?204:(d.w>960?128:14);
@@ -782,7 +950,7 @@ function openWin(id,arg){
   const tb=h('div',{class:'tb'},h('span',{class:'row',html:ico(app.icon,17,'app')}),titleEl,h('div',{class:'tb-b'},minBtn,maxBtn,clBtn));
   const body=h('div',{class:'wb'});
   const node=h('div',{class:'win',tabindex:'-1'},tb,body);
-  const rec={id:++seq,app:id,node,body,titleEl,maxBtn,rect,prev:null,min:false,max:false,api:{},taskBtn:null};
+  const rec={id:++seq,app:id,node,body,titleEl,maxBtn,rect,prev:null,min:false,max:false,api:{},taskBtn:null,vd:curVD};
   rec.setTitle=t=>{ titleEl.textContent=t; if(rec.taskBtn) rec.taskBtn.title=t; };
   ['n','s','e','w','ne','nw','se','sw'].forEach(dir=>{
     const hd=h('i',{class:'rs rs-'+dir});
@@ -799,7 +967,7 @@ function openWin(id,arg){
   try{ app.mount(rec,arg); }catch(err){ body.append(h('div',{class:'empty'},'Приложение не запустилось: '+err.message)); }
   focus(rec); blip(560,.05,.16);
   if(isNarrow()) setMax(rec,true);
-  if(node.animate) node.animate([{opacity:0,transform:'scale(.97)'},{opacity:1,transform:'none'}],{duration:130,easing:'ease-out'});
+  node.style.animation='winIn .15s ease-out';
   return rec;
 }
 function showSnap(zone){
@@ -870,13 +1038,16 @@ function addTask(w){
   const app=APPS[w.app];
   const b=h('button',{class:'task',title:app.title,html:ico(app.icon,19,'app')});
   b.onclick=()=>{ if(w.min){ unmin(w); focus(w); } else if(active===w) setMin(w); else focus(w); };
-  b.oncontextmenu=e=>{ e.preventDefault(); menu(e.clientX,e.clientY,[
+  b.addEventListener('pointerenter',()=>showPrev(w,b));
+  b.addEventListener('pointerleave',hidePrev);
+  b.oncontextmenu=e=>{ e.preventDefault(); hidePrev(); menu(e.clientX,e.clientY,[
     {label:w.max?'Свернуть в окно':'Развернуть',icon:w.max?'rest':'max',on:()=>{ unmin(w); setMax(w,!w.max); focus(w); }},
-    {label:'Свернуть',icon:'min',on:()=>setMin(w)},'-',
+    {label:'Свернуть',icon:'min',on:()=>setMin(w)},
+    {label:'На другой рабочий стол',icon:'grid',on:()=>moveWin(w,(w.vd+1)%vds.length)},'-',
     {label:'Закрыть окно',icon:'close',on:()=>closeWin(w)}]); };
   w.taskBtn=b; tasksEl.append(b); syncTasks();
 }
-function syncTasks(){ wins.forEach(w=>{ if(w.taskBtn) w.taskBtn.classList.toggle('act',active===w&&!w.min); }); }
+function syncTasks(){ wins.forEach(w=>{ if(w.taskBtn){ w.taskBtn.classList.toggle('act',active===w&&!w.min); w.taskBtn.hidden=w.vd!==curVD; } }); }
 function tick(){
   const now=new Date();
   const t=now.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'});
@@ -921,7 +1092,7 @@ function netPop(){
 }
 
 /* ---------------- меню «Пуск» ---------------- */
-const PINNED=['explorer','notepad','term','calc','paint','photos','mines','snake','player','tasksmgr','bin','settings'];
+const PINNED=['explorer','browser','notepad','term','calc','paint','photos','solitaire','mines','snake','player','clock','tasksmgr','update','bin','settings'];
 function collectFiles(path,acc,limit){
   const n=node(path); if(!n||n.t!=='d') return acc;
   for(const nm of Object.keys(n.c)){
@@ -968,6 +1139,7 @@ function toggleStart(){
       {label:'Заблокировать',icon:'lock',on:lock},
       {label:'Перезагрузка',icon:'boot',on:()=>reboot()},
       '-',
+      {label:'Центр обновления',icon:'update',on:()=>{ closePops(); openWin('update'); }},
       {label:'Среда восстановления',icon:'wrench',on:()=>openRecovery()},
       {label:'Переустановить систему',icon:'disk',on:()=>{ if(confirm('Стереть всё и запустить установщик заново?')) factoryReset(); }}
     ]);
@@ -1005,7 +1177,7 @@ function renderIcons(){
     if(onCtx) el.oncontextmenu=e=>{ e.preventDefault(); e.stopPropagation(); onCtx(e); };
     box.append(el); return el;
   };
-  ['explorer','notepad','term','paint','snake','mines','player','settings','bin'].forEach(id=>{
+  ['explorer','browser','notepad','term','paint','solitaire','snake','mines','player','clock','settings','bin'].forEach(id=>{
     const a=APPS[id];
     mk(a.title,a.icon,'app',()=>openWin(id),e=>menu(e.clientX,e.clientY,[{label:'Открыть',icon:a.icon,on:()=>openWin(id)}]));
   });
@@ -1021,11 +1193,14 @@ deskEl.addEventListener('pointerdown',e=>{ if(e.target===deskEl||e.target.id==='
 deskEl.addEventListener('contextmenu',e=>{
   if(e.target.closest('.win,.dic')) return;
   e.preventDefault();
+  const dr=deskEl.getBoundingClientRect(), nx=e.clientX-dr.left, ny=e.clientY-dr.top;
   menu(e.clientX,e.clientY,[
     {label:'Новая папка',icon:'plus',on:()=>{ const d=node(['Рабочий стол']); const nm=uniqueName(d,'Новая папка'); d.c[nm]={t:'d',c:{}}; fsChanged(); toast('Создана папка «'+nm+'»'); }},
     {label:'Новый текстовый файл',icon:'file',on:()=>{ const d=node(['Рабочий стол']); const nm=uniqueName(d,'заметка.txt'); d.c[nm]={t:'f',body:''}; fsChanged(); openWin('notepad',{path:['Рабочий стол',nm]}); }},'-',
     {label:'Сменить обои',icon:'photo',on:()=>{ const w=openWin('settings'); if(w&&w.api.scrollTo) setTimeout(()=>w.api.scrollTo('wall'),60); }},
     {label:'Параметры',icon:'gear',on:()=>openWin('settings')},'-',
+    {label:'Новый стикер',icon:'sticky',on:()=>addNote(nx-90,ny-14)},
+    {label:'Выполнить',icon:'term',key:'Win+R',on:runDialog},
     {label:'Диспетчер задач',icon:'tasks',key:'Ctrl+Alt+Del',on:()=>openWin('tasksmgr')},
     {label:'Обновить',icon:'refresh',key:'F5',on:()=>{ renderIcons(); toast('Рабочий стол обновлён'); }}
   ]);
@@ -1033,24 +1208,62 @@ deskEl.addEventListener('contextmenu',e=>{
 $('#mark').onclick=()=>{ const w=openWin('settings'); if(w&&w.api.scrollTo) setTimeout(()=>w.api.scrollTo('act'),60); };
 
 /* ---------------- проводник ---------------- */
+let clip=null;
 function mountExplorer(win,arg){
   let path=(arg&&arg.path)?arg.path.slice():['Рабочий стол'];
-  const hist=[]; let sel=null;
+  const hist=[]; let sel=null,view='tiles',asc=true,renaming=null;
   const side=h('div',{class:'ex-s'}),crumbs=h('div',{class:'crumbs'}),files=h('div',{class:'files'}),status=h('div',{class:'stat'});
   const bBack=h('button',{class:'btn',title:'Назад',html:ico('back',16)});
   const bUp=h('button',{class:'btn',title:'Вверх',html:ico('up',16)});
   const bNew=h('button',{class:'btn',html:ico('plus',15)+'<span>Папка</span>'});
-  const bDel=h('button',{class:'btn',html:ico('trash',15)+'<span>Удалить</span>'});
-  win.body.append(h('div',{class:'tool'},bBack,bUp,h('div',{class:'sep'}),bNew,bDel),
+  const bRen=h('button',{class:'btn',title:'Переименовать (F2)',html:ico('rename',15)});
+  const bCopy=h('button',{class:'btn',title:'Копировать (Ctrl+C)',html:ico('save',15)});
+  const bPaste=h('button',{class:'btn',title:'Вставить (Ctrl+V)',html:ico('plus',15)+'<span>Вставить</span>'});
+  const bDel=h('button',{class:'btn',title:'В корзину (Del)',html:ico('trash',15)});
+  const bView=h('button',{class:'btn',title:'Вид: плитка или список',html:ico('listic',15)});
+  const bSort=h('button',{class:'btn',title:'Порядок сортировки',html:ico('sort',15)});
+  win.body.append(h('div',{class:'tool'},bBack,bUp,h('div',{class:'sep'}),bNew,bRen,bCopy,bPaste,bDel,h('div',{class:'sep'}),bView,bSort),
     h('div',{class:'ex'},side,h('div',{class:'ex-m'},crumbs,files,status)));
-  function go(p,push){ if(push!==false) hist.push(path.slice()); path=p.slice(); sel=null; render(); }
+  function go(p,push){ if(push!==false) hist.push(path.slice()); path=p.slice(); sel=null; renaming=null; render(); }
   bBack.onclick=()=>{ if(hist.length){ path=hist.pop(); sel=null; render(); } };
   bUp.onclick=()=>{ if(path.length) go(path.slice(0,-1)); };
-  bNew.onclick=()=>{ const d=node(path); if(!d) return; const nm=uniqueName(d,'Новая папка'); d.c[nm]={t:'d',c:{}}; fsChanged(); toast('Создана папка «'+nm+'»'); };
+  bNew.onclick=()=>{ const d=node(path); if(!d) return; const nm=uniqueName(d,'Новая папка'); d.c[nm]={t:'d',c:{}}; sel=nm; renaming=nm; fsChanged(); toast('Создана папка «'+nm+'»'); };
+  bRen.onclick=()=>{ if(sel){ renaming=sel; render(); } };
+  bCopy.onclick=()=>{ if(!sel) return; clip={name:sel,node:JSON.parse(JSON.stringify(node(path.concat(sel))))}; render(); toast('Скопировано: '+sel); };
+  bPaste.onclick=()=>{
+    if(!clip) return;
+    const d=node(path); if(!d) return;
+    const nm=uniqueName(d,clip.name);
+    d.c[nm]=JSON.parse(JSON.stringify(clip.node));
+    sel=nm; fsChanged(); toast('Вставлено: '+nm);
+  };
   bDel.onclick=()=>{ if(sel) toBin(path.concat(sel)); sel=null; render(); };
+  bView.onclick=()=>{ view=view==='tiles'?'list':'tiles'; render(); };
+  bSort.onclick=()=>{ asc=!asc; render(); };
+  win.node.addEventListener('keydown',e=>{
+    if(e.target.tagName==='INPUT') return;
+    if(e.key==='F2'&&sel){ e.preventDefault(); renaming=sel; render(); }
+    else if(e.key==='Delete'&&sel){ e.preventDefault(); toBin(path.concat(sel)); sel=null; render(); }
+    else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='c'&&sel){ bCopy.onclick(); }
+    else if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='v'){ bPaste.onclick(); }
+    else if(e.key==='Backspace'&&path.length){ e.preventDefault(); go(path.slice(0,-1)); }
+  });
+  function commitRename(nm,val){
+    const d=node(path),v=(val||'').trim();
+    renaming=null;
+    if(!v||v===nm){ render(); return; }
+    if(d.c[v]){ toast('«'+v+'» уже есть в этой папке'); render(); return; }
+    const keys=Object.keys(d.c),item=d.c[nm];
+    const rebuilt={};
+    keys.forEach(k=>{ if(k===nm) rebuilt[v]=item; else rebuilt[k]=d.c[k]; });
+    d.c=rebuilt; sel=v; fsChanged(); toast('Переименовано: '+v);
+  }
   function render(){
     const dir=node(path);
-    bBack.disabled=!hist.length; bUp.disabled=!path.length; bDel.disabled=!sel;
+    bBack.disabled=!hist.length; bUp.disabled=!path.length;
+    bDel.disabled=bRen.disabled=bCopy.disabled=!sel; bPaste.disabled=!clip;
+    bView.innerHTML=ico(view==='tiles'?'listic':'tiles',15);
+    bSort.innerHTML=ico('sort',15)+'<span>'+(asc?'А→Я':'Я→А')+'</span>';
     win.setTitle((path.length?path[path.length-1]:'Мой компьютер')+' — Проводник');
     side.innerHTML='';
     side.append(h('div',{class:'sec-h'},'Быстрый доступ'));
@@ -1060,25 +1273,45 @@ function mountExplorer(win,arg){
     crumbs.innerHTML='';
     crumbs.append(h('button',{onclick:()=>go([])},'Мой компьютер'));
     path.forEach((p,i)=>{ crumbs.append(h('em',{},' / ')); crumbs.append(h('button',{onclick:()=>go(path.slice(0,i+1))},p)); });
+    files.className='files'+(view==='list'?' list':'');
     files.innerHTML='';
     if(!dir||dir.t!=='d'){ files.append(h('div',{class:'empty'},'Папка не найдена')); status.innerHTML=''; return; }
-    const names=Object.keys(dir.c).sort((a,b)=>cmpNames(a,b,dir));
+    let names=Object.keys(dir.c).sort((a,b)=>cmpNames(a,b,dir));
+    if(!asc){ const d1=names.filter(n=>dir.c[n].t==='d').reverse(),f1=names.filter(n=>dir.c[n].t!=='d').reverse(); names=d1.concat(f1); }
     if(!names.length) files.append(h('div',{class:'empty'},'Здесь пока пусто'));
     names.forEach(nm=>{
       const it=dir.c[nm];
-      const el=h('button',{class:'fitem'+(sel===nm?' sel':'')},h('span',{class:'row',html:ico(it.t==='d'?'folder':fileIcon(nm),32,it.t==='d'?'app':'doc')}),h('span',{},nm));
-      el.addEventListener('pointerdown',()=>{ sel=nm; files.querySelectorAll('.fitem.sel').forEach(x=>x.classList.remove('sel')); el.classList.add('sel'); bDel.disabled=false; });
-      const open=()=>{ if(it.t==='d') go(path.concat(nm)); else openFile(path.concat(nm)); };
+      const label=renaming===nm
+        ? h('input',{value:nm,spellcheck:'false'})
+        : h('span',{},nm);
+      const el=h('button',{class:'fitem'+(sel===nm?' sel':'')},
+        h('span',{class:'row',html:ico(it.t==='d'?'folder':fileIcon(nm),view==='list'?20:32,it.t==='d'?'app':'doc')}),label);
+      if(renaming===nm){
+        label.addEventListener('keydown',e=>{ e.stopPropagation();
+          if(e.key==='Enter') commitRename(nm,label.value);
+          if(e.key==='Escape'){ renaming=null; render(); } });
+        label.addEventListener('blur',()=>commitRename(nm,label.value));
+        setTimeout(()=>{ label.focus(); label.select(); },10);
+      }
+      el.addEventListener('pointerdown',()=>{ if(renaming) return; sel=nm;
+        files.querySelectorAll('.fitem.sel').forEach(x=>x.classList.remove('sel')); el.classList.add('sel');
+        bDel.disabled=bRen.disabled=bCopy.disabled=false; });
+      const open=()=>{ if(renaming) return; if(it.t==='d') go(path.concat(nm)); else openFile(path.concat(nm)); };
       activate(el,open);
-      el.addEventListener('keydown',e=>{ if(e.key==='Enter') open(); });
-      el.oncontextmenu=e=>{ e.preventDefault(); menu(e.clientX,e.clientY,[
-        {label:'Открыть',icon:it.t==='d'?'folder':'file',on:open},'-',
-        {label:'Удалить',icon:'trash',on:()=>{ toBin(path.concat(nm)); sel=null; render(); }}]); };
+      el.addEventListener('keydown',e=>{ if(e.key==='Enter'&&!renaming) open(); });
+      el.oncontextmenu=e=>{ e.preventDefault(); sel=nm; menu(e.clientX,e.clientY,[
+        {label:'Открыть',icon:it.t==='d'?'folder':'file',on:open},
+        it.t!=='d'&&fileIcon(nm)!=='img'?{label:'Открыть в браузере',icon:'globe',on:()=>openWin('browser',{url:'file:///'+path.concat(nm).join('/')})}:null,
+        {label:'Переименовать',icon:'rename',key:'F2',on:()=>{ renaming=nm; render(); }},
+        {label:'Копировать',icon:'save',key:'Ctrl+C',on:()=>{ clip={name:nm,node:JSON.parse(JSON.stringify(it))}; render(); toast('Скопировано: '+nm); }},'-',
+        {label:'Удалить',icon:'trash',key:'Del',on:()=>{ toBin(path.concat(nm)); sel=null; render(); }}
+      ].filter(Boolean)); };
       files.append(el);
     });
     const dirs=names.filter(n=>dir.c[n].t==='d').length;
     status.innerHTML='';
-    status.append(h('span',{},'Элементов: '+names.length),h('span',{},'папок: '+dirs),h('span',{},'файлов: '+(names.length-dirs)));
+    status.append(...[h('span',{},'Элементов: '+names.length),h('span',{},'папок: '+dirs),h('span',{},'файлов: '+(names.length-dirs)),
+      sel?h('span',{},'выбрано: '+sel):null,clip?h('span',{},'в буфере: '+clip.name):null].filter(Boolean));
   }
   win.watcher=render; fsWatchers.add(render);
   win.api.goto=p=>go(p);
@@ -1112,7 +1345,8 @@ function mountBin(win){
       list.append(el);
     });
     status.innerHTML='';
-    status.append(h('span',{},'Элементов: '+bin.length),sel>=0?h('span',{},'откуда: '+(bin[sel].from.join(' / ')||'корень')):null);
+    status.append(...[h('span',{},'Элементов: '+bin.length),
+      sel>=0?h('span',{},'откуда: '+(bin[sel].from.join(' / ')||'корень')):null].filter(Boolean));
   }
   win.watcher=render; fsWatchers.add(render);
   render();
@@ -1177,7 +1411,8 @@ function mountTerm(win){
     ['touch имя','создать файл'],['rm имя','отправить в корзину'],['echo текст','напечатать'],
     ['theme тема','light, dark, system'],['accent цвет','teal, sky, violet, amber, rose'],
     ['date','дата и время'],['whoami','кто я'],['apps','список приложений'],['key','ключ продукта'],
-    ['neofetch','о системе'],['matrix','кое-что зелёное'],['party','конфетти'],
+    ['neofetch','о системе'],['note текст','стикер на рабочий стол'],['vd [номер]','рабочие столы'],
+    ['matrix','кое-что зелёное'],['party','конфетти'],
     ['crash','синий экран (не надо)'],['recovery','среда восстановления'],['clear','очистить экран']];
   function run(line){
     const parts=line.trim().split(/\s+/),cmd=parts[0],a=parts.slice(1),rest=line.trim().slice(cmd.length).trim();
@@ -1221,13 +1456,23 @@ function mountTerm(win){
       case 'key': out(state.key||'(ключ не введён)',state.activated?'g':'e'); out(state.activated?'состояние: активировано':'состояние: не активировано','d'); break;
       case 'clear': log.innerHTML=''; break;
       case 'sudo': out('guest не входит в список sudoers. Инцидент записан. Шутка.','e'); break;
+      case 'note':{
+        addNote(80+((state.notes.length*30)%220),80+((state.notes.length*26)%180));
+        if(rest){ state.notes[state.notes.length-1].text=rest; save(); renderNotes(); }
+        out('стикер создан','g'); break;
+      }
+      case 'vd':{
+        if(a[0]){ const i=parseInt(a[0],10)-1; if(vds[i]){ switchVD(i); out('переключено на '+vds[i],'g'); } else out('vd: нет стола №'+a[0],'e'); }
+        else vds.forEach((nm,i)=>out('  '+(i===curVD?'* ':'  ')+(i+1)+'. '+nm,i===curVD?'g':'d'));
+        break;
+      }
       case 'matrix': out('вход в матрицу…','g'); matrixRain(); break;
       case 'party': out('да начнётся веселье','g'); confetti(); break;
       case 'crash': out('вызываю исключение ядра…','e'); setTimeout(()=>bsod('FENESTRA_MANUALLY_INITIATED_CRASH'),450); break;
       case 'recovery': out('перезагрузка в среду восстановления…','g'); setTimeout(()=>openRecovery(),400); break;
       case 'neofetch':{
         const art=['  ┌─────┬─────┐','  │     │     │','  ├─────┼─────┤','  │     │     │','  └─────┴─────┘'];
-        const info=[state.user.toLowerCase()+'@fenestra','──────────────','ОС: Фенестра 9 (сборка 2026.09)','Ядро: HTML 5 / CSS / JS',
+        const info=[state.user.toLowerCase()+'@fenestra','──────────────','ОС: Фенестра '+state.ver+' (сборка '+BUILD[state.ver]+')','Ядро: HTML 5 / CSS / JS',
           'Оболочка: fsh 1.1','Окон открыто: '+wins.size,'Тема: '+state.theme+', акцент: '+state.accent,
           'Активация: '+(state.activated?'да':'нет'),'Разрешение: '+W.innerWidth+'×'+W.innerHeight];
         for(let i=0;i<Math.max(art.length,info.length);i++) out((art[i]||'               ').padEnd(17)+(info[i]||''),i<2?'p':'');
@@ -1298,21 +1543,47 @@ function mountCalc(win){
 /* ---------------- кисть ---------------- */
 function mountPaint(win){
   const CW=640,CH=400;
-  const cv=h('canvas',{width:CW,height:CH}),g=cv.getContext('2d');
+  const cv=h('canvas',{width:CW,height:CH}),g=cv.getContext('2d',{willReadFrequently:true});
   g.fillStyle='#fff'; g.fillRect(0,0,CW,CH); g.lineJoin=g.lineCap='round';
-  let color='#1d3f4a',size=4,erase=false,drawing=false,lx=0,ly=0;
-  const COLORS=['#1d3f4a','#0e8a80','#2f6fd0','#7a4bd0','#c8371f','#d98b12','#2c8a3f','#e9eef0'];
-  const sw=COLORS.map(c=>{ const b=h('button',{class:'sw',style:'background:'+c,title:c,'aria-label':'Цвет '+c}); b.onclick=()=>{ color=c; erase=false; sync(); }; return b; });
-  const bErase=h('button',{class:'btn',html:ico('eraser',15)+'<span>Ластик</span>'});
-  const bClear=h('button',{class:'btn',html:ico('trash',15)+'<span>Очистить</span>'});
+  let color='#1d3f4a',size=4,tool='brush',drawing=false,lx=0,ly=0,snap=null;
+  const undo=[];
+  const COLORS=['#1d3f4a','#0e8a80','#2f6fd0','#7a4bd0','#c8371f','#d98b12','#2c8a3f','#ffffff'];
+  const TOOLS=[['brush','brush','Кисть'],['lineic','line','Линия'],['rectic','rect','Прямоугольник'],
+    ['ellipseic','ellipse','Эллипс'],['fill','fill','Заливка'],['picker','picker','Пипетка'],['eraser','eraser','Ластик']];
+  const tbtns=TOOLS.map(([icn,id,title])=>{
+    const b=h('button',{class:'tool-b'+(id===tool?' on':''),title:title,html:ico(icn,17)});
+    b.onclick=()=>{ tool=id; sync(); };
+    return b;
+  });
+  const sw=COLORS.map(c=>{
+    const b=h('button',{class:'sw',style:'background:'+c,title:c,'aria-label':'Цвет '+c});
+    b.onclick=()=>{ color=c; if(tool==='eraser'||tool==='picker') tool='brush'; sync(); };
+    return b;
+  });
+  const pick=h('input',{type:'color',value:'#1d3f4a',class:'sw',style:'padding:0;width:26px;height:24px',title:'Свой цвет'});
+  pick.oninput=()=>{ color=pick.value; if(tool==='eraser') tool='brush'; sync(); };
+  const bUndo=h('button',{class:'btn',title:'Отменить (Ctrl+Z)',html:ico('undo',15)});
+  const bClear=h('button',{class:'btn',html:ico('trash',15)});
   const bSave=h('button',{class:'btn pri',html:ico('save',15)+'<span>Сохранить</span>'});
-  const range=h('input',{type:'range',class:'slider',min:'1',max:'28',value:String(size),style:'width:96px','aria-label':'Толщина'});
-  const lab=h('span',{style:'font-size:11.5px;color:var(--txt-2);min-width:44px'},size+' px');
-  win.body.append(h('div',{class:'tool'},sw,h('div',{class:'sep'}),range,lab,bErase,bClear,bSave),h('div',{class:'pt'},h('div',{class:'pt-c'},cv)));
-  function sync(){ sw.forEach((b,i)=>b.classList.toggle('on',COLORS[i]===color&&!erase)); bErase.classList.toggle('pri',erase); }
-  range.oninput=()=>{ size=+range.value; lab.textContent=size+' px'; };
-  bErase.onclick=()=>{ erase=!erase; sync(); };
-  bClear.onclick=()=>{ g.fillStyle='#fff'; g.fillRect(0,0,CW,CH); };
+  const range=h('input',{type:'range',class:'slider',min:'1',max:'30',value:String(size),style:'width:84px','aria-label':'Толщина'});
+  const lab=h('span',{style:'font-size:11.5px;color:var(--txt-2);min-width:40px'},size+' px');
+  const stat=h('div',{class:'stat'});
+  win.body.append(h('div',{class:'tool'},tbtns,h('div',{class:'sep'}),range,lab,h('div',{class:'sep'}),sw,pick,h('div',{class:'sep'}),bUndo,bClear,bSave),
+    h('div',{class:'pt'},h('div',{class:'pt-c'},cv)),stat);
+  function sync(){
+    tbtns.forEach((b,i)=>b.classList.toggle('on',TOOLS[i][1]===tool));
+    sw.forEach((b,i)=>b.classList.toggle('on',COLORS[i]===color));
+    pick.value=/^#[0-9a-f]{6}$/i.test(color)?color:pick.value;
+    bUndo.disabled=!undo.length;
+    stat.innerHTML='';
+    stat.append(h('span',{},'Инструмент: '+(TOOLS.find(t=>t[1]===tool)||[,,''])[2]),
+      h('span',{},'цвет: '+color),h('span',{},'толщина: '+size+' px'),h('span',{},'шагов отмены: '+undo.length));
+  }
+  function push(){ try{ undo.push(cv.toDataURL('image/png')); if(undo.length>12) undo.shift(); }catch(e){} sync(); }
+  function restore(url,then){ const im=new Image(); im.onload=()=>{ g.clearRect(0,0,CW,CH); g.drawImage(im,0,0); then&&then(); }; im.src=url; }
+  range.oninput=()=>{ size=+range.value; lab.textContent=size+' px'; sync(); };
+  bUndo.onclick=()=>{ const u=undo.pop(); if(u) restore(u,sync); };
+  bClear.onclick=()=>{ push(); g.fillStyle='#fff'; g.fillRect(0,0,CW,CH); };
   bSave.onclick=()=>{
     try{
       const dir=node(['Изображения']),nm=uniqueName(dir,'рисунок.png');
@@ -1322,19 +1593,81 @@ function mountPaint(win){
     }catch(e){ toast('Не удалось сохранить рисунок'); }
   };
   const pos=e=>{ const r=cv.getBoundingClientRect(); return [(e.clientX-r.left)*CW/r.width,(e.clientY-r.top)*CH/r.height]; };
+  const hex=(r,gg,b)=>'#'+[r,gg,b].map(v=>v.toString(16).padStart(2,'0')).join('');
+  function flood(x,y,to){
+    x|=0; y|=0;
+    const img=g.getImageData(0,0,CW,CH),d=img.data;
+    const at=(px,py)=>(py*CW+px)*4;
+    const s0=at(x,y),t0=[d[s0],d[s0+1],d[s0+2],d[s0+3]];
+    const m=/^#?([0-9a-f]{6})$/i.exec(to); if(!m) return;
+    const tc=[parseInt(m[1].slice(0,2),16),parseInt(m[1].slice(2,4),16),parseInt(m[1].slice(4,6),16),255];
+    if(t0.every((v,i)=>v===tc[i])) return;
+    const near=i=>Math.abs(d[i]-t0[0])+Math.abs(d[i+1]-t0[1])+Math.abs(d[i+2]-t0[2])+Math.abs(d[i+3]-t0[3])<40;
+    const st=[[x,y]];
+    while(st.length){
+      const [px,py]=st.pop();
+      if(px<0||py<0||px>=CW||py>=CH) continue;
+      const i=at(px,py);
+      if(!near(i)) continue;
+      d[i]=tc[0]; d[i+1]=tc[1]; d[i+2]=tc[2]; d[i+3]=255;
+      st.push([px+1,py],[px-1,py],[px,py+1],[px,py-1]);
+    }
+    g.putImageData(img,0,0);
+  }
+  function shape(x0,y0,x1,y1){
+    g.strokeStyle=color; g.lineWidth=size; g.fillStyle=color;
+    if(tool==='line'){ g.beginPath(); g.moveTo(x0,y0); g.lineTo(x1,y1); g.stroke(); }
+    else if(tool==='rect'){ g.strokeRect(Math.min(x0,x1),Math.min(y0,y1),Math.abs(x1-x0),Math.abs(y1-y0)); }
+    else if(tool==='ellipse'){
+      g.beginPath();
+      g.ellipse((x0+x1)/2,(y0+y1)/2,Math.abs(x1-x0)/2,Math.abs(y1-y0)/2,0,0,Math.PI*2);
+      g.stroke();
+    }
+  }
   cv.addEventListener('pointerdown',e=>{
-    e.preventDefault(); drawing=true; cv.setPointerCapture(e.pointerId); [lx,ly]=pos(e);
-    g.strokeStyle=g.fillStyle=erase?'#fff':color; g.lineWidth=erase?size*2.4:size;
-    g.beginPath(); g.arc(lx,ly,g.lineWidth/2,0,Math.PI*2); g.fill();
+    e.preventDefault(); cv.setPointerCapture(e.pointerId);
+    const [x,y]=pos(e);
+    if(tool==='picker'){
+      const d=g.getImageData(x|0,y|0,1,1).data;
+      color=hex(d[0],d[1],d[2]); tool='brush'; sync(); toast('Цвет: '+color); return;
+    }
+    push();
+    if(tool==='fill'){ flood(x,y,color); return; }
+    drawing=true; lx=x; ly=y;
+    if(tool==='brush'||tool==='eraser'){
+      g.strokeStyle=g.fillStyle=tool==='eraser'?'#fff':color;
+      g.lineWidth=tool==='eraser'?size*2.4:size;
+      g.beginPath(); g.arc(x,y,g.lineWidth/2,0,Math.PI*2); g.fill();
+    } else snap=cv.toDataURL('image/png');
   });
   cv.addEventListener('pointermove',e=>{
     if(!drawing) return;
     const [x,y]=pos(e);
-    g.strokeStyle=erase?'#fff':color; g.lineWidth=erase?size*2.4:size;
-    g.beginPath(); g.moveTo(lx,ly); g.lineTo(x,y); g.stroke(); lx=x; ly=y;
+    if(tool==='brush'||tool==='eraser'){
+      g.strokeStyle=tool==='eraser'?'#fff':color;
+      g.lineWidth=tool==='eraser'?size*2.4:size;
+      g.beginPath(); g.moveTo(lx,ly); g.lineTo(x,y); g.stroke();
+      lx=x; ly=y;
+    } else if(snap){
+      const im=new Image();
+      im.onload=()=>{ g.clearRect(0,0,CW,CH); g.drawImage(im,0,0); shape(lx,ly,x,y); };
+      im.src=snap;
+      cv.dataset.x=x; cv.dataset.y=y;
+    }
   });
-  const stop=()=>{ drawing=false; };
+  const stop=e=>{
+    if(!drawing) return;
+    drawing=false;
+    if(snap&&(tool==='line'||tool==='rect'||tool==='ellipse')){
+      const x=+cv.dataset.x||lx,y=+cv.dataset.y||ly;
+      const im=new Image();
+      im.onload=()=>{ g.clearRect(0,0,CW,CH); g.drawImage(im,0,0); shape(lx,ly,x,y); };
+      im.src=snap;
+    }
+    snap=null;
+  };
   cv.addEventListener('pointerup',stop); cv.addEventListener('pointercancel',stop);
+  win.node.addEventListener('keydown',e=>{ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){ e.preventDefault(); bUndo.onclick(); } });
   sync();
 }
 
@@ -1568,30 +1901,95 @@ function mountPlayer(win){
 /* ---------------- диспетчер задач ---------------- */
 const SYSPROC=[['Оболочка Фенестры','win',9.2,148],['Диспетчер окон','win',4.1,96],['Служба времени','auto',0.4,18],['Индексатор файлов','folder',1.2,44]];
 function mountTasks(win){
+  const N=60;
+  const cpuHist=Array(N).fill(0),ramHist=Array(N).fill(0);
+  const cpuCv=h('canvas'),ramCv=h('canvas');
+  const cpuVal=h('b',{},'0 %'),ramVal=h('b',{},'0,00 ГБ');
+  const tipC=h('div',{class:'gt',hidden:''}),tipR=h('div',{class:'gt',hidden:''});
+  const gCpu=h('div',{class:'graph'},h('div',{class:'gh'},h('span',{},'Процессор'),cpuVal),cpuCv,tipC);
+  const gRam=h('div',{class:'graph'},h('div',{class:'gh'},h('span',{},'Память'),ramVal),ramCv,tipR);
+  const graphs=h('div',{class:'graphs'},gCpu,gRam);
   const gauges=h('div',{class:'gauges'}),body=h('div',{class:'tsk'});
   const bKill=h('button',{class:'btn dng',html:ico('close',15)+'<span>Снять задачу</span>'});
-  win.body.append(h('div',{class:'tool'},bKill,h('span',{style:'font-size:11.5px;color:var(--txt-2)'},'Обновление каждую секунду')),gauges,body);
-  let sel=null,timer=null,phase=0;
-  const load=id=>{ const s=String(id).split('').reduce((a,c)=>a+c.charCodeAt(0),0); return 3+((s*7)%9)+Math.abs(Math.sin(phase/6+s))*4; };
+  win.body.append(h('div',{class:'tool'},bKill,h('span',{style:'font-size:11.5px;color:var(--txt-2)'},'Обновление раз в секунду · наведите курсор на график')),
+    graphs,gauges,body);
+  let sel=null,timer=null,phase=0,hoverC=-1,hoverR=-1,first=true;
+  const RAM_MAX=4096;
+  const ru=v=>String(v).replace('.',',');
+  const fmtCpu=v=>ru(v.toFixed(0))+' %', fmtRam=v=>ru((v/1024).toFixed(2))+' ГБ';
+  const load=id=>{ const q=String(id).split('').reduce((a,c)=>a+c.charCodeAt(0),0); return 3+((q*7)%9)+Math.abs(Math.sin(phase/6+q))*4; };
+  function css(v){ return getComputedStyle(D.documentElement).getPropertyValue(v).trim(); }
+  function drawGraph(cv,data,max,hover,tip,fmt){
+    const r=cv.getBoundingClientRect(); if(!r.width) return;
+    const dpr=W.devicePixelRatio||1;
+    cv.width=r.width*dpr; cv.height=r.height*dpr;
+    const g=cv.getContext('2d');
+    g.setTransform(dpr,0,0,dpr,0,0);
+    const w=r.width,hh=r.height;
+    g.clearRect(0,0,w,hh);
+    g.strokeStyle=css('--line'); g.lineWidth=1;
+    for(let i=1;i<4;i++){ const y=Math.round(hh*i/4)+.5; g.beginPath(); g.moveTo(0,y); g.lineTo(w,y); g.stroke(); }
+    const pt=i=>[i*(w/(data.length-1)), hh-Math.min(1,data[i]/max)*(hh-6)-3];
+    g.beginPath(); g.moveTo(0,hh);
+    for(let i=0;i<data.length;i++){ const [x,y]=pt(i); g.lineTo(x,y); }
+    g.lineTo(w,hh); g.closePath();
+    g.fillStyle=css('--acc-soft')||'rgba(0,160,150,.15)'; g.fill();
+    g.beginPath();
+    for(let i=0;i<data.length;i++){ const [x,y]=pt(i); i?g.lineTo(x,y):g.moveTo(x,y); }
+    g.strokeStyle=css('--acc'); g.lineWidth=2; g.lineJoin='round'; g.stroke();
+    const [lxp,lyp]=pt(data.length-1);
+    g.fillStyle=css('--acc'); g.beginPath(); g.arc(lxp-1,lyp,3,0,Math.PI*2); g.fill();
+    g.fillStyle=css('--txt-2'); g.font='10px "DM Sans", system-ui, sans-serif';
+    g.textAlign='right'; g.fillText(fmt(max),w-3,10);
+    g.textAlign='left'; g.fillText('60 с назад',3,hh-3);
+    if(hover>=0&&hover<data.length){
+      const [hx,hy]=pt(hover);
+      g.strokeStyle=css('--txt-2'); g.lineWidth=1; g.globalAlpha=.5;
+      g.beginPath(); g.moveTo(hx,0); g.lineTo(hx,hh); g.stroke(); g.globalAlpha=1;
+      g.fillStyle=css('--surf'); g.beginPath(); g.arc(hx,hy,4,0,Math.PI*2); g.fill();
+      g.fillStyle=css('--acc'); g.beginPath(); g.arc(hx,hy,2.6,0,Math.PI*2); g.fill();
+      tip.hidden=false;
+      tip.textContent=fmt(data[hover])+' · '+(data.length-1-hover)+' с назад';
+      const tw=tip.offsetWidth||90;
+      tip.style.left=clamp(hx-tw/2,4,w-tw-4)+'px';
+      tip.style.top=Math.max(2,hy-30)+'px';
+    } else tip.hidden=true;
+  }
+  function bindHover(cv,setter,redraw){
+    cv.addEventListener('pointermove',e=>{
+      const r=cv.getBoundingClientRect();
+      setter(clamp(Math.round((e.clientX-r.left)/(r.width/(N-1))),0,N-1));
+      redraw();
+    });
+    cv.addEventListener('pointerleave',()=>{ setter(-1); redraw(); });
+  }
+  bindHover(cpuCv,v=>hoverC=v,()=>drawGraph(cpuCv,cpuHist,100,hoverC,tipC,fmtCpu));
+  bindHover(ramCv,v=>hoverR=v,()=>drawGraph(ramCv,ramHist,RAM_MAX,hoverR,tipR,fmtRam));
   function render(){
     phase++;
-    const rows=[...wins.values()].map(w=>({id:'w'+w.id,name:APPS[w.app].title,icon:APPS[w.app].icon,cpu:load(w.app+w.id),ram:120+APPS[w.app].title.length*13,win:w}))
+    const rows=[...wins.values()].map(w=>({id:'w'+w.id,name:APPS[w.app].title,icon:APPS[w.app].icon,
+        cpu:load(w.app+w.id),ram:120+APPS[w.app].title.length*13,win:w}))
       .concat(SYSPROC.map(([n,ic,c,r],i)=>({id:'s'+i,name:n,icon:ic,cpu:c+Math.abs(Math.sin(phase/8+i))*1.6,ram:r,win:null})));
     const cpu=Math.min(99,rows.reduce((a,r)=>a+r.cpu,0));
     const ram=rows.reduce((a,r)=>a+r.ram,0);
+    if(first){ cpuHist.fill(cpu); ramHist.fill(ram); first=false; }
+    cpuHist.push(cpu); cpuHist.shift(); ramHist.push(ram); ramHist.shift();
+    cpuVal.textContent=ru(cpu.toFixed(1))+' %';
+    ramVal.textContent=fmtRam(ram);
+    drawGraph(cpuCv,cpuHist,100,hoverC,tipC,fmtCpu);
+    drawGraph(ramCv,ramHist,RAM_MAX,hoverR,tipR,fmtRam);
     gauges.innerHTML='';
-    const gauge=(lab,val,sub)=>h('div',{class:'gauge'},h('span',{},lab),h('b',{},val),
-      h('div',{class:'meter'},h('i',{style:'width:'+sub+'%'})));
-    gauges.append(gauge('Процессор',cpu.toFixed(1)+' %',cpu),
-      gauge('Память',(ram/1024).toFixed(2)+' ГБ',Math.min(100,ram/40)),
-      gauge('Окон',String(wins.size),Math.min(100,wins.size*12)),
+    const gauge=(lab,val,sub)=>h('div',{class:'gauge'},h('span',{},lab),h('b',{},val),h('div',{class:'meter'},h('i',{style:'width:'+clamp(sub,0,100)+'%'})));
+    gauges.append(gauge('Окон',String(wins.size),Math.min(100,wins.size*12)),
+      gauge('Рабочих столов',String(vds.length),vds.length*25),
+      gauge('Файлов в корзине',String(bin.length),Math.min(100,bin.length*20)),
       gauge('Диск','0 МБ/с',3));
     const tb=h('table',{},h('thead',{},h('tr',{},h('th',{},'Имя'),h('th',{},'ЦП'),h('th',{},'Память'),h('th',{},'Тип'))));
     const tbody=h('tbody');
     rows.forEach(r=>{
       const tr=h('tr',{class:sel===r.id?'sel':''},
         h('td',{},h('div',{class:'nm'},h('span',{class:'row',style:'color:var(--acc)',html:ico(r.icon,16)}),r.name)),
-        h('td',{},r.cpu.toFixed(1)+' %'),h('td',{},r.ram+' МБ'),h('td',{},r.win?'Приложение':'Система'));
+        h('td',{},ru(r.cpu.toFixed(1))+' %'),h('td',{},r.ram+' МБ'),h('td',{},r.win?'Приложение':'Система'));
       tr.onclick=()=>{ sel=r.id; render(); };
       tbody.append(tr);
     });
@@ -1602,12 +2000,13 @@ function mountTasks(win){
     bKill.onclick=()=>{ if(cur&&cur.win){ closeWin(cur.win); sel=null; render(); toast('Задача снята: '+cur.name); } };
   }
   timer=setInterval(render,1000);
+  win.api.onResize=render;
   win.api.onClose=()=>clearInterval(timer);
-  render();
+  render(); setTimeout(render,60);
 }
 
 /* ---------------- параметры ---------------- */
-const WALLS=[['dusk','Сумерки'],['aurora','Сияние'],['grid','Сетка'],['paper','Бумага']];
+const WALLS=[['dusk','Сумерки'],['aurora','Сияние'],['space','Космос ·  живые'],['flow','Поток ·  живые'],['grid','Сетка'],['paper','Бумага']];
 const ACCENTS=[['teal','Бирюза',190],['sky','Небо',252],['violet','Фиалка',305],['amber','Янтарь',70],['rose','Роза',16]];
 function mountSettings(win){
   const root=h('div',{class:'st'});
@@ -1631,7 +2030,9 @@ function mountSettings(win){
     const PREV={dusk:'linear-gradient(150deg,oklch(55% .12 calc(var(--acc-h) + 12)),oklch(20% .06 calc(var(--acc-h) + 95)))',
       aurora:'linear-gradient(170deg,oklch(72% .13 var(--acc-h)),oklch(38% .1 calc(var(--acc-h) + 60)) 55%,oklch(22% .05 var(--acc-h)))',
       grid:'repeating-linear-gradient(90deg,oklch(70% .08 var(--acc-h) / .3) 0 1px,transparent 1px 14px),linear-gradient(160deg,oklch(32% .06 var(--acc-h)),oklch(18% .04 var(--acc-h)))',
-      paper:'linear-gradient(150deg,oklch(94% .025 calc(var(--acc-h) + 30)),oklch(86% .045 calc(var(--acc-h) - 25)))'};
+      paper:'linear-gradient(150deg,oklch(94% .025 calc(var(--acc-h) + 30)),oklch(86% .045 calc(var(--acc-h) - 25)))',
+      space:'radial-gradient(60% 80% at 30% 30%, oklch(70% .14 var(--acc-h) / .5), transparent 60%),linear-gradient(175deg,oklch(20% .06 calc(var(--acc-h) + 40)),oklch(9% .03 calc(var(--acc-h) + 90)))',
+      flow:'repeating-linear-gradient(115deg, oklch(70% .13 var(--acc-h) / .5) 0 2px, transparent 2px 9px),linear-gradient(160deg,oklch(26% .07 var(--acc-h)),oklch(13% .04 calc(var(--acc-h) + 60)))'};
     WALLS.forEach(([k,l])=>walls.append(h('button',{class:'wall'+(state.wall===k?' on':''),onclick:()=>{ state.wall=k; applyChrome(); save(); render(); }},
       h('i',{style:'background:'+PREV[k]}),h('span',{},l))));
     root.append(h('div',{class:'card',id:'st-wall'},h('h3',{},'Обои рабочего стола'),walls));
@@ -1660,7 +2061,7 @@ function mountSettings(win){
       h('div',{class:'row',style:'flex-wrap:wrap;gap:8px'},keyIn,bGen,bAct),
       h('p',{class:'lead'},'Ключ проверяется по контрольной сумме: последний символ дополняет сумму остальных. Любой ключ из генератора подойдёт — это игрушка, а не защита.')));
     const dl=h('dl',{class:'kv'});
-    const ver=h('dd',{style:'cursor:pointer'},'Фенестра 9 · сборка 2026.09');
+    const ver=h('dd',{style:'cursor:pointer'},'Фенестра '+state.ver+' · сборка '+BUILD[state.ver]);
     ver.onclick=()=>{ if(++taps>=7){ taps=0; confetti(); toast('Режим разработчика включён. Шутка, но конфетти настоящее.'); } };
     [['Версия',ver],['Пользователь',state.user],['Ключ продукта',state.key||'не введён'],
      ['Установлена',state.since||'только что'],['Диск',state.disk],
@@ -1860,7 +2261,7 @@ function showBoot(done){
   const el=$('#boot'); el.hidden=false; el.innerHTML='';
   const prog=h('i');
   el.append(h('div',{style:'color:oklch(78% .13 var(--acc-h))',html:LOGO}),
-    h('div',{class:'boot-t'},'Фенестра 9'),
+    h('div',{class:'boot-t'},'Фенестра '+state.ver),
     h('div',{class:'spin'}),
     h('div',{class:'bar-p'},prog),
     h('div',{class:'boot-h'},'F8 — среда восстановления'));
@@ -1874,7 +2275,9 @@ function showBoot(done){
 }
 function bootDesktop(fresh){
   $('#os').hidden=false;
-  applyChrome(); renderIcons(); tick();
+  applyChrome(); renderIcons(); renderNotes(); renderVDBar(); tick();
+  if(state.pendingUpd){ state.ver=state.pendingUpd; state.pendingUpd=''; save();
+    setTimeout(()=>toast('Обновления установлены. Теперь у вас Фенестра '+state.ver+'.'),900); }
   if(!node(['Изображения'])) fs.c['Изображения']={t:'d',c:{}};
   if(!isNarrow()) openWin('explorer',{path:['Рабочий стол']});
   openWin('notepad',{path:['Рабочий стол','привет.txt']});
@@ -2036,8 +2439,14 @@ function seedImage(){
 D.addEventListener('keydown',e=>{
   if(!$('#os').hidden&&!$('#lock').hidden&&(e.key==='Enter'||e.key==='Escape')){ $('#lock').hidden=true; return; }
   if(!$('#setup').hidden||!$('#boot').hidden||!$('#bsod').hidden||!$('#recovery').hidden) return;
-  if(e.key==='Escape'){ closePops(); fxStop=1; return; }
+  if(e.key==='Escape'){
+    closePops(); fxStop=1; hidePrev();
+    if(!$('#run').hidden){ $('#run').hidden=true; $('#run').innerHTML=''; }
+    if(!$('#taskviewL').hidden) toggleTaskView();
+    return;
+  }
   if(e.ctrlKey&&e.altKey&&(e.key==='Delete'||e.key==='Del')){ e.preventDefault(); openWin('tasksmgr'); return; }
+  if((e.key==='r'||e.key==='к')&&(e.metaKey||(e.ctrlKey&&e.altKey))){ e.preventDefault(); runDialog(); return; }
   if(e.key==='Meta'||e.key==='OS'){ e.preventDefault(); toggleStart(); return; }
   if(e.key==='F5'&&!e.target.closest('input,textarea')){ e.preventDefault(); renderIcons(); toast('Рабочий стол обновлён'); return; }
   if(e.key==='Tab'&&e.altKey){
@@ -2052,11 +2461,13 @@ D.addEventListener('keydown',e=>{
 /* ---------------- старт ---------------- */
 $('#startbtn').innerHTML=ico('start',20);
 $('#startbtn').onclick=toggleStart;
+$('#taskview').onclick=toggleTaskView;
+$('#tr-bell').onclick=notifPop;
 $('#clock').onclick=calendarPop;
 $('#tr-vol').onclick=volumePop;
 $('#tr-net').onclick=netPop;
 $('#tr-theme').onclick=()=>{ setTheme(state.theme==='dark'?'light':state.theme==='light'?'system':'dark'); toast('Тема: '+({system:'как в системе',light:'светлая',dark:'тёмная'})[state.theme]); };
-W.addEventListener('resize',()=>{ if(!fxEl.hidden) fxSize(); if(!saverEl.hidden){ saverCv.width=W.innerWidth; saverCv.height=W.innerHeight; } });
+W.addEventListener('resize',()=>{ if(!fxEl.hidden) fxSize(); if(!saverEl.hidden){ saverCv.width=W.innerWidth; saverCv.height=W.innerHeight; } wallFit(); });
 
 function start(restored){
   const saved=restored&&restored.s?restored:load();
@@ -2067,6 +2478,717 @@ function start(restored){
   if(!state.installed){ runSetup(); return; }
   seedImage(); bootDesktop(false);
 }
+
+/* ================= дополнительные иконки ================= */
+Object.assign(IC,{
+ bell:'<path d="M6.4 10.4a5.6 5.6 0 1 1 11.2 0c0 4.2 1.4 5.6 1.4 5.6H5s1.4-1.4 1.4-5.6z" fill="currentColor" fill-opacity=".12"/><path d="M10.2 19.2a2 2 0 0 0 3.6 0"/>',
+ globe:'<circle cx="12" cy="12" r="8.6"/><path d="M3.6 12h16.8M12 3.4c2.5 2.7 2.5 14.5 0 17.2-2.5-2.7-2.5-14.5 0-17.2z"/>',
+ cards:'<rect x="8" y="4.6" width="10.6" height="15" rx="2.2" fill="currentColor" fill-opacity=".12"/><path d="M5.4 7.6 4 18.2a2 2 0 0 0 1.7 2.2l5.6.8"/>',
+ clockic:'<circle cx="12" cy="12" r="8.6"/><path d="M12 7V12l3.2 2"/>',
+ update:'<path d="M20.2 12a8.2 8.2 0 1 1-2.5-5.9M20.4 4.2v4.4H16"/><path d="M12 8.8v4.4l2.8 1.7"/>',
+ sticky:'<path d="M5 5h14v9.4L14.4 19H5z" fill="currentColor" fill-opacity=".12"/><path d="M19 14.4h-4.6V19"/>',
+ fill:'<path d="M5.4 12.4 12 5.8l6.4 6.6-6.4 6.6z" fill="currentColor" fill-opacity=".14"/><path d="M9 8.8 6.8 6.6M19.6 16c.9 1.3.6 2.7-.6 3.2-1.1.5-2.3-.3-2.3-1.6 0-1 1.4-2.8 1.6-3 .2.2 1 1 1.3 1.4z"/>',
+ lineic:'<path d="M5 19 19 5"/>',
+ rectic:'<rect x="4.6" y="6.6" width="14.8" height="10.8" rx="1.8"/>',
+ ellipseic:'<ellipse cx="12" cy="12" rx="7.6" ry="5.6"/>',
+ picker:'<path d="m5 19 .6-2.6 8-8 2 2-8 8z" fill="currentColor" fill-opacity=".14"/><path d="m14.6 6.4 1.6-1.6a2 2 0 0 1 2.8 2.8l-1.6 1.6"/>',
+ undo:'<path d="M4.6 9.4h9.2a5.4 5.4 0 0 1 0 10.8H8.4M4.6 9.4 8.4 5.6M4.6 9.4l3.8 3.8"/>',
+ listic:'<path d="M4.4 7h2M9 7h10.6M4.4 12h2M9 12h10.6M4.4 17h2M9 17h10.6"/>',
+ tiles:'<rect x="4" y="4" width="6.4" height="6.4" rx="1.5"/><rect x="13.6" y="4" width="6.4" height="6.4" rx="1.5"/><rect x="4" y="13.6" width="6.4" height="6.4" rx="1.5"/><rect x="13.6" y="13.6" width="6.4" height="6.4" rx="1.5"/>',
+ sort:'<path d="M7 5.2v13.6M7 18.8 4.4 16M7 18.8 9.6 16M13 7.4h6.6M13 12h4.6M13 16.6h2.6"/>',
+ rename:'<path d="M4 20h16M6.4 15.6 15.8 6.2l2.6 2.6-9.4 9.4H6.4z" fill="currentColor" fill-opacity=".12"/>',
+ grid:'<rect x="3.4" y="3.4" width="7.2" height="7.2" rx="1.8"/><rect x="13.4" y="3.4" width="7.2" height="7.2" rx="1.8" fill="currentColor" fill-opacity=".18"/><rect x="3.4" y="13.4" width="7.2" height="7.2" rx="1.8" fill="currentColor" fill-opacity=".18"/><rect x="13.4" y="13.4" width="7.2" height="7.2" rx="1.8"/>',
+ stopw:'<circle cx="12" cy="13.4" r="7.4"/><path d="M12 9.8v3.6l2.4 1.4M9.6 3.4h4.8M12 3.4v2.6M18.6 6.6l1.6-1.6"/>'
+});
+const BUILD={'9.0':'2026.09','9.1':'2026.10','9.2':'2026.11'};
+
+/* ================= живые обои ================= */
+const wallCv=$('#wallcv'),wallG=wallCv.getContext('2d');
+let wallRaf=0,wallLast=0,wallMode='',stars=[],comet=null;
+function wallFit(){ const r=deskEl.getBoundingClientRect(); wallCv.width=Math.max(1,r.width|0); wallCv.height=Math.max(1,r.height|0); }
+function wallStop(){ if(wallRaf) cancelAnimationFrame(wallRaf); wallRaf=0; wallG.clearRect(0,0,wallCv.width,wallCv.height); }
+function wallpaper(mode){
+  const live=mode==='space'||mode==='flow';
+  wallMode=mode; wallCv.hidden=!live;
+  if(!live){ wallStop(); return; }
+  wallFit();
+  if(mode==='space'&&!stars.length)
+    stars=Array.from({length:240},()=>({x:Math.random(),y:Math.random(),z:rnd(.22,1),s:rnd(.5,1.9),t:rnd(0,7)}));
+  if(wallRaf) return;
+  const loop=t=>{
+    wallRaf=requestAnimationFrame(loop);
+    if(t-wallLast<32) return;
+    wallLast=t;
+    if(D.hidden||!saverEl.hidden||$('#os').hidden) return;
+    const w=wallCv.width,hh=wallCv.height;
+    const hue=parseFloat(getComputedStyle(D.documentElement).getPropertyValue('--acc-h'))||190;
+    wallG.clearRect(0,0,w,hh);
+    if(wallMode==='space'){
+      stars.forEach(st=>{
+        st.x+=0.00022*st.z; if(st.x>1.02) st.x=-0.02;
+        const tw=0.55+0.45*Math.sin(t/700+st.t);
+        wallG.globalAlpha=(0.25+0.6*st.z)*tw;
+        wallG.fillStyle=st.z>.8?'oklch(92% .07 '+hue+')':'#fff';
+        wallG.fillRect(st.x*w,st.y*hh,st.s*st.z*1.6,st.s*st.z*1.6);
+      });
+      wallG.globalAlpha=1;
+      if(!comet&&Math.random()<0.006) comet={x:rnd(0,w*.7),y:rnd(0,hh*.4),v:rnd(7,11),l:0};
+      if(comet){
+        comet.x+=comet.v; comet.y+=comet.v*.42; comet.l+=1;
+        const g2=wallG.createLinearGradient(comet.x,comet.y,comet.x-90,comet.y-38);
+        g2.addColorStop(0,'oklch(95% .12 '+hue+')'); g2.addColorStop(1,'transparent');
+        wallG.strokeStyle=g2; wallG.lineWidth=2; wallG.lineCap='round';
+        wallG.beginPath(); wallG.moveTo(comet.x,comet.y); wallG.lineTo(comet.x-90,comet.y-38); wallG.stroke();
+        if(comet.x>w+120||comet.l>240) comet=null;
+      }
+    } else {
+      const bands=7;
+      for(let i=0;i<bands;i++){
+        const ph=t/2600+i*.55, amp=hh*(0.05+i*0.012), base=hh*(0.22+i*0.1);
+        wallG.beginPath();
+        for(let x=0;x<=w;x+=14){
+          const y=base+Math.sin(x/(190+i*26)+ph)*amp+Math.sin(x/97-ph*1.6)*amp*.34;
+          x===0?wallG.moveTo(x,y):wallG.lineTo(x,y);
+        }
+        wallG.lineTo(w,hh); wallG.lineTo(0,hh); wallG.closePath();
+        wallG.fillStyle='oklch('+(34+i*4.5)+'% .09 '+((hue+i*11)%360)+' / .3)';
+        wallG.fill();
+      }
+    }
+  };
+  wallRaf=requestAnimationFrame(loop);
+}
+
+/* ================= рабочие столы ================= */
+let vds=['Рабочий стол 1','Рабочий стол 2'], curVD=0;
+function renderVDBar(){
+  const bar=$('#vdbar'); bar.innerHTML='';
+  bar.hidden=isNarrow()||vds.length<2;
+  vds.forEach((nm,i)=>bar.append(h('button',{class:'vdot'+(i===curVD?' on':''),title:nm,onclick:()=>switchVD(i)},String(i+1))));
+}
+function switchVD(i){
+  if(i===curVD||!vds[i]) return;
+  curVD=i; active=null;
+  wins.forEach(w=>{ w.node.hidden=w.vd!==i||w.min; w.node.classList.remove('act'); });
+  focusTop(); renderVDBar(); renderTaskView();
+  toast(vds[i]);
+}
+function moveWin(w,i){
+  if(!vds[i]) return;
+  w.vd=i; w.node.hidden=i!==curVD||w.min;
+  syncTasks(); focusTop(); renderTaskView();
+  toast(APPS[w.app].title+' → '+vds[i]);
+}
+function addVD(){
+  if(vds.length>=4){ toast('Больше четырёх столов не помещается'); return; }
+  vds.push('Рабочий стол '+(vds.length+1)); renderVDBar(); renderTaskView();
+}
+function removeVD(i){
+  if(vds.length<2) return;
+  wins.forEach(w=>{ if(w.vd===i) w.vd=0; else if(w.vd>i) w.vd--; });
+  vds.splice(i,1);
+  vds=vds.map((_,k)=>'Рабочий стол '+(k+1));
+  curVD=Math.min(curVD,vds.length-1);
+  switchVD(curVD); wins.forEach(w=>{ w.node.hidden=w.vd!==curVD||w.min; });
+  syncTasks(); focusTop(); renderVDBar(); renderTaskView();
+}
+function renderTaskView(){
+  const L=$('#taskviewL'); if(L.hidden) return;
+  L.innerHTML='';
+  const g=h('div',{class:'tv-g'});
+  vds.forEach((nm,i)=>{
+    const ul=h('ul');
+    [...wins.values()].filter(w=>w.vd===i).forEach(w=>ul.append(h('li',{},
+      h('span',{class:'row',html:ico(APPS[w.app].icon,14)}),w.titleEl.textContent)));
+    if(!ul.children.length) ul.append(h('li',{style:'opacity:.5'},'пусто'));
+    const card=h('button',{class:'tv-d'+(i===curVD?' on':''),onclick:()=>{ switchVD(i); toggleTaskView(); }},h('b',{},nm),ul);
+    if(vds.length>1) card.append(h('span',{class:'rm',title:'Закрыть стол',html:ico('close',14),
+      onclick:e=>{ e.stopPropagation(); removeVD(i); }}));
+    g.append(card);
+  });
+  g.append(h('button',{class:'tv-add',title:'Новый рабочий стол',html:ico('plus',22),onclick:addVD}));
+  L.append(h('div',{class:'tv-h'},'Рабочие столы · Esc или повторный клик закроет представление'),g,
+    h('div',{class:'tv-h'},'Окон открыто: '+wins.size));
+}
+function toggleTaskView(){
+  const L=$('#taskviewL');
+  L.hidden=!L.hidden;
+  $('#taskview').classList.toggle('on',!L.hidden);
+  renderTaskView();
+}
+$('#taskviewL').addEventListener('click',e=>{ if(e.target.id==='taskviewL') toggleTaskView(); });
+
+/* ================= превью на панели задач ================= */
+let prevEl=null;
+function hidePrev(){ if(prevEl){ prevEl.remove(); prevEl=null; } }
+function showPrev(w,btn){
+  if(lastPointer==='touch') return;
+  hidePrev();
+  const st=w.min?'свёрнуто':(active===w?'активно':'открыто');
+  prevEl=h('div',{class:'tprev'},
+    h('b',{},h('span',{class:'row',style:'color:var(--acc)',html:ico(APPS[w.app].icon,16)}),APPS[w.app].title),
+    h('i',{}),h('span',{},w.titleEl.textContent+' · '+st));
+  $('#os').append(prevEl);
+  const r=btn.getBoundingClientRect(),pr=prevEl.getBoundingClientRect(),br=$('#bar').getBoundingClientRect();
+  prevEl.style.left=clamp(r.left+r.width/2-pr.width/2,8,W.innerWidth-pr.width-8)+'px';
+  prevEl.style.top=(br.top-pr.height-8)+'px';
+}
+
+/* ================= центр уведомлений ================= */
+const notifs=[]; let unread=0;
+function pushNotif(msg){
+  notifs.unshift({msg:String(msg),at:new Date()});
+  if(notifs.length>40) notifs.pop();
+  unread++; renderBell();
+}
+function renderBell(){
+  const b=$('#tr-bell'); if(!b) return;
+  b.innerHTML=ico('bell',17);
+  b.classList.toggle('has',unread>0);
+}
+function notifPop(){
+  unread=0; renderBell();
+  const list=h('div',{class:'nlist'});
+  if(!notifs.length) list.append(h('div',{style:'font-size:12.5px;color:var(--txt-2);padding:6px 2px'},'Пока ничего не происходило.'));
+  notifs.slice(0,12).forEach(n=>list.append(h('div',{class:'nitem'},
+    h('span',{class:'row',style:'color:var(--acc)',html:ico('bell',15)}),
+    h('span',{},n.msg),
+    h('time',{},n.at.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit'})))));
+  showPop(h('div',{style:'display:flex;flex-direction:column;gap:10px'},
+    h('div',{class:'row'},h('div',{class:'sec-h',style:'margin:0'},'Уведомления'),
+      h('div',{style:'flex:1'}),
+      h('button',{class:'btn',style:'padding:3px 9px;font-size:11.5px',onclick:()=>{ notifs.length=0; closePops(); toast('Уведомления очищены'); }},'Очистить')),
+    list),$('#tr-bell'));
+}
+
+/* ================= выполнить ================= */
+const RUN_MAP={notepad:'notepad','блокнот':'notepad',cmd:'term',terminal:'term','терминал':'term',fsh:'term',
+  explorer:'explorer','проводник':'explorer',calc:'calc','калькулятор':'calc',mspaint:'paint',paint:'paint','кисть':'paint',
+  solitaire:'solitaire','косынка':'solitaire',snake:'snake','змейка':'snake',mines:'mines','сапёр':'mines',
+  player:'player','плеер':'player',music:'player',clock:'clock','часы':'clock',taskmgr:'tasksmgr','диспетчер':'tasksmgr',
+  settings:'settings','параметры':'settings',control:'settings',bin:'bin','корзина':'bin',update:'update','обновление':'update',
+  browser:'browser','браузер':'browser',photos:'photos','фото':'photos'};
+function runDialog(){
+  closePops();
+  const el=$('#run'); el.hidden=false; el.innerHTML='';
+  const inp=h('input',{placeholder:'notepad, term, fenestra://about, Документы/борщ.txt',spellcheck:'false','aria-label':'Команда'});
+  const hint=h('p',{},'Введите имя приложения, адрес или путь к файлу. Список приложений — команда apps в терминале.');
+  const close=()=>{ el.hidden=true; el.innerHTML=''; };
+  function go(){
+    const v=inp.value.trim(); if(!v){ close(); return; }
+    const low=v.toLowerCase();
+    if(RUN_MAP[low]){ close(); openWin(RUN_MAP[low]); return; }
+    if(low==='winver'){ close(); toast('Фенестра '+state.ver+', сборка '+BUILD[state.ver]+'. Лицензия: '+(state.activated?'активна':'не активна')); return; }
+    if(low==='regedit'){ close(); toast('Реестра в Фенестре нет. И, честно говоря, так спокойнее.'); return; }
+    if(low==='crash'){ close(); bsod('FENESTRA_MANUALLY_INITIATED_CRASH'); return; }
+    if(low==='recovery'){ close(); openRecovery(); return; }
+    if(low.startsWith('fenestra://')||low.startsWith('file:')){ close(); openWin('browser',{url:v}); return; }
+    const path=v.replace(/^[~/]+/,'').split('/').filter(Boolean);
+    if(node(path)){ close(); openFile(path); return; }
+    hint.textContent='Не найдено: «'+v+'». Проверьте имя приложения или путь.';
+    inp.style.borderColor='var(--danger)';
+  }
+  inp.oninput=()=>{ inp.style.borderColor=''; };
+  inp.onkeydown=e=>{ if(e.key==='Enter') go(); if(e.key==='Escape') close(); };
+  el.append(h('div',{class:'run-c'},
+    h('h3',{},h('span',{class:'row',style:'color:var(--acc)',html:ico('term',18)}),'Выполнить'),hint,inp,
+    h('div',{class:'row',style:'justify-content:flex-end;gap:8px'},
+      h('button',{class:'btn',onclick:close},'Отмена'),
+      h('button',{class:'btn pri',onclick:go},'Открыть'))));
+  el.addEventListener('click',e=>{ if(e.target.id==='run') close(); });
+  setTimeout(()=>inp.focus(),30);
+}
+
+/* ================= стикеры ================= */
+const NOTE_COLORS=['oklch(92% .12 95)','oklch(90% .1 150)','oklch(90% .1 25)','oklch(90% .09 250)'];
+function addNote(x,y){
+  const d=deskSize();
+  state.notes.push({x:clamp(x||60,6,Math.max(6,d.w-206)),y:clamp(y||60,6,Math.max(6,d.h-160)),text:'',c:state.notes.length%NOTE_COLORS.length});
+  save(); renderNotes();
+  const last=$('#notes').lastChild; if(last) last.querySelector('textarea').focus();
+}
+function renderNotes(){
+  const box=$('#notes'); box.innerHTML='';
+  const d=deskSize();
+  state.notes.forEach((n,i)=>{
+    const ta=h('textarea',{spellcheck:'false',placeholder:'Записка…'});
+    ta.value=n.text;
+    ta.oninput=()=>{ n.text=ta.value; save(); };
+    const head=h('div',{class:'nh'},
+      h('button',{title:'Другой цвет',html:ico('brush',13),onclick:()=>{ n.c=(n.c+1)%NOTE_COLORS.length; save(); renderNotes(); }}),
+      h('button',{title:'Удалить',html:ico('close',13),onclick:()=>{ state.notes.splice(i,1); save(); renderNotes(); }}));
+    const el=h('div',{class:'note',style:'left:'+clamp(n.x,0,Math.max(0,d.w-200))+'px;top:'+clamp(n.y,0,Math.max(0,d.h-90))+'px;background:'+NOTE_COLORS[n.c%NOTE_COLORS.length]},head,ta);
+    head.addEventListener('pointerdown',e=>{
+      if(e.target.closest('button')) return;
+      const sx=e.clientX,sy=e.clientY,ox=n.x,oy=n.y;
+      const mv=ev=>{ n.x=clamp(ox+ev.clientX-sx,0,Math.max(0,deskSize().w-200)); n.y=clamp(oy+ev.clientY-sy,0,Math.max(0,deskSize().h-60));
+        el.style.left=n.x+'px'; el.style.top=n.y+'px'; };
+      const up=()=>{ D.removeEventListener('pointermove',mv); D.removeEventListener('pointerup',up); save(); };
+      D.addEventListener('pointermove',mv); D.addEventListener('pointerup',up);
+    });
+    box.append(el);
+  });
+}
+
+/* ================= центр обновления ================= */
+const UPDATES={'9.0':{to:'9.1',title:'Фенестра 9.1',notes:['Живые обои: «Космос» и «Поток»','Косынка и Часы с будильником','Несколько рабочих столов и представление задач','Диалог «Выполнить» по Win+R']},
+               '9.1':{to:'9.2',title:'Фенестра 9.2',notes:['Браузер «Фенестрит» открывает HTML-файлы из Документов','Стикеры на рабочем столе','Центр уведомлений','Кисть: фигуры, заливка и отмена']}};
+function mountUpdate(win){
+  const root=h('div',{class:'upd'});
+  win.body.append(root);
+  let phase='idle';
+  function render(){
+    root.innerHTML='';
+    const up=UPDATES[state.ver];
+    root.append(h('div',{class:'upd-h'},
+      h('div',{class:'ci',html:ico(up?'update':'shield',24)}),
+      h('div',{},h('h2',{},up?'Доступно обновление':'У вас последняя версия'),
+        h('p',{},up?'Фенестра '+state.ver+' → '+up.to+' · сборка '+BUILD[up.to]:'Фенестра '+state.ver+' · сборка '+BUILD[state.ver]+'. Проверено только что.'))));
+    if(!up){
+      root.append(h('div',{class:'card'},h('h3',{},'История обновлений'),
+        h('ul',{style:'margin:0;padding-left:18px;font-size:12.5px;line-height:1.7;color:var(--txt-2)'},
+          Object.keys(UPDATES).map(k=>h('li',{},UPDATES[k].title+' — установлено')))),
+        h('p',{class:'lead'},'Следующее обновление выйдет примерно никогда: система целиком помещается в один файл, и это её лучшая функция.'));
+      return;
+    }
+    const list=h('ul',{style:'margin:0;padding-left:18px;font-size:12.5px;line-height:1.8'},up.notes.map(n=>h('li',{},n)));
+    const prog=h('i'),bar=h('div',{class:'bar-p',style:'width:100%;background:var(--surf-3)'},prog),log=h('div',{class:'upd-log'});
+    bar.hidden=true;
+    const btn=h('button',{class:'btn pri',html:ico('update',15)+'<span>Загрузить и установить</span>'});
+    btn.onclick=()=>{
+      if(phase==='done'){ state.pendingUpd=up.to; save(); reboot(); return; }
+      if(phase==='run') return;
+      phase='run'; bar.hidden=false; btn.disabled=true;
+      const steps=['Проверка подписи пакета','Загрузка '+up.title,'Распаковка компонентов','Установка приложений','Настройка параметров'];
+      let p=0,i=0;
+      const t=setInterval(()=>{
+        p+=Math.random()*9+6; prog.style.width=Math.min(100,p)+'%';
+        const want=Math.min(steps.length,Math.floor(p/100*steps.length)+1);
+        while(i<want){ log.append(h('div',{},'  '+steps[i]+' … готово')); log.scrollTop=log.scrollHeight; i++; }
+        if(p>=100){
+          clearInterval(t); phase='done'; btn.disabled=false;
+          btn.innerHTML=ico('boot',15)+'<span>Перезагрузить сейчас</span>';
+          log.append(h('div',{style:'color:var(--acc)'},'  Требуется перезагрузка. Не выключайте вкладку.'));
+          toast('Обновление готово к установке');
+        }
+      },300);
+    };
+    root.append(h('div',{class:'card'},h('h3',{},'Что нового в '+up.title),list),bar,log,
+      h('div',{class:'row',style:'gap:9px;flex-wrap:wrap'},btn,
+        h('button',{class:'btn',onclick:()=>toast('Отложено. Напомним при следующем запуске.'),html:ico('auto',15)+'<span>Отложить</span>'})));
+  }
+  render();
+}
+
+/* ================= будильник ================= */
+setInterval(()=>{
+  const a=state.alarm;
+  if(!a||!a.on) return;
+  const now=new Date(), cur=now.getHours()*60+now.getMinutes();
+  if(cur===a.at&&now.getSeconds()<2&&a.last!==cur){
+    a.last=cur; save();
+    toast('Будильник: '+String((a.at/60)|0).padStart(2,'0')+':'+String(a.at%60).padStart(2,'0'));
+    let n=0;
+    const ring=setInterval(()=>{ blip(n%2?660:880,.24,.3,'triangle'); if(++n>7) clearInterval(ring); },320);
+  }
+},1000);
+
+
+/* ================= косынка ================= */
+const SUITS=['♠','♥','♦','♣'], RANKS=[,'A','2','3','4','5','6','7','8','9','10','В','Д','К'];
+const isRed=c=>c.s===1||c.s===2;
+function mountSolitaire(win){
+  let stock=[],waste=[],found=[[],[],[],[]],tab=[[],[],[],[],[],[],[]],sel=null,moves=0,t0=0,timer=null,hist=[];
+  const board=h('div',{class:'sol'});
+  const info=h('div',{class:'sol-i'});
+  const bNew=h('button',{class:'btn'},'Новая игра');
+  const bUndo=h('button',{class:'btn',html:ico('undo',15)+'<span>Отменить</span>'});
+  const bAuto=h('button',{class:'btn',html:ico('up',15)+'<span>Автосбор</span>'});
+  win.body.append(h('div',{class:'tool'},bNew,bUndo,bAuto),board);
+  const snapshot=()=>JSON.stringify({stock,waste,found,tab,moves});
+  function pushHist(){ hist.push(snapshot()); if(hist.length>40) hist.shift(); }
+  function undo(){
+    const st=hist.pop(); if(!st) return;
+    const o=JSON.parse(st); stock=o.stock; waste=o.waste; found=o.found; tab=o.tab; moves=o.moves; sel=null; draw();
+  }
+  function deal(){
+    const deck=[];
+    for(let s2=0;s2<4;s2++) for(let r=1;r<=13;r++) deck.push({r,s:s2,up:false});
+    for(let i=deck.length-1;i>0;i--){ const j=(Math.random()*(i+1))|0; const t=deck[i]; deck[i]=deck[j]; deck[j]=t; }
+    tab=[[],[],[],[],[],[],[]]; found=[[],[],[],[]]; waste=[]; hist=[]; sel=null; moves=0;
+    for(let i=0;i<7;i++) for(let j=0;j<=i;j++){ const c=deck.pop(); c.up=j===i; tab[i].push(c); }
+    stock=deck;
+    t0=Date.now();
+    if(timer) clearInterval(timer);
+    timer=setInterval(draw,1000);
+    draw();
+  }
+  const canTab=(c,pile)=>pile.length?(pile[pile.length-1].up&&isRed(pile[pile.length-1])!==isRed(c)&&pile[pile.length-1].r===c.r+1):c.r===13;
+  const canFound=(c,f)=>f.length?(f[f.length-1].s===c.s&&f[f.length-1].r===c.r-1):c.r===1;
+  function take(){
+    if(!sel) return null;
+    if(sel.k==='w') return waste.splice(sel.i,1);
+    if(sel.k==='f') return found[sel.p].splice(sel.i,1);
+    return tab[sel.p].splice(sel.i);
+  }
+  function afterMove(){
+    moves++;
+    tab.forEach(pl=>{ if(pl.length&&!pl[pl.length-1].up) pl[pl.length-1].up=true; });
+    sel=null;
+    if(found.reduce((a,f)=>a+f.length,0)===52){
+      clearInterval(timer);
+      const secs=Math.round((Date.now()-t0)/1000);
+      const best=state.solBest;
+      if(!best||secs<best.t){ state.solBest={t:secs,m:moves}; save(); }
+      toast('Победа! Ходов: '+moves+', время: '+secs+' с.');
+      confetti(); blip(880,.2,.2,'triangle');
+    }
+    draw();
+  }
+  function tryFound(c,fromSel){
+    for(let i=0;i<4;i++) if(canFound(c,found[i])){
+      pushHist();
+      const old=sel; sel=fromSel;
+      const cards=take(); sel=old;
+      if(!cards) return false;
+      found[i].push(cards[0]);
+      afterMove(); return true;
+    }
+    return false;
+  }
+  function clickPile(kind,p){
+    if(kind==='stock'){
+      pushHist();
+      if(stock.length){ const c=stock.pop(); c.up=true; waste.push(c); }
+      else { stock=waste.reverse().map(c=>({...c,up:false})); waste=[]; }
+      sel=null; moves++; draw(); return;
+    }
+    if(!sel) return;
+    const src=sel.k==='w'?waste:sel.k==='f'?found[sel.p]:tab[sel.p];
+    const c=src[sel.i];
+    if(!c){ sel=null; draw(); return; }
+    if(kind==='found'){
+      if(sel.k==='t'&&sel.i!==tab[sel.p].length-1){ sel=null; draw(); return; }
+      if(canFound(c,found[p])){ pushHist(); const cards=take(); found[p].push(cards[0]); afterMove(); }
+      else { sel=null; draw(); }
+      return;
+    }
+    if(kind==='tab'){
+      if(canTab(c,tab[p])){ pushHist(); const cards=take(); tab[p].push(...cards); afterMove(); }
+      else { sel=null; draw(); }
+    }
+  }
+  function clickCard(k,p,i,dbl){
+    const pile=k==='w'?waste:k==='f'?found[p]:tab[p];
+    const c=pile[i];
+    if(k==='t'&&!c.up){ if(i===pile.length-1){ pushHist(); c.up=true; moves++; draw(); } return; }
+    if(dbl){ if(tryFound(c,{k,p,i})) return; }
+    if(sel&&sel.k===k&&sel.p===p&&sel.i===i){ sel=null; draw(); return; }
+    if(sel&&k==='t'){ clickPile('tab',p); return; }
+    if(sel&&k==='f'){ clickPile('found',p); return; }
+    sel={k,p,i}; draw();
+  }
+  bNew.onclick=deal;
+  bUndo.onclick=undo;
+  bAuto.onclick=()=>{
+    let did=true,guard=0;
+    while(did&&guard++<60){
+      did=false;
+      if(waste.length&&tryFound(waste[waste.length-1],{k:'w',i:waste.length-1})) { did=true; continue; }
+      for(let i=0;i<7;i++){
+        const pl=tab[i];
+        if(pl.length&&pl[pl.length-1].up&&tryFound(pl[pl.length-1],{k:'t',p:i,i:pl.length-1})){ did=true; break; }
+      }
+    }
+    draw();
+  };
+  function cardEl(c,k,p,i,top){
+    const el=h('button',{class:'pcard '+(c.up?(isRed(c)?'red':'black'):'back')+((sel&&sel.k===k&&sel.p===p&&sel.i<=i&&k==='t')||(sel&&sel.k===k&&sel.p===p&&sel.i===i)?' sel':''),
+      style:'top:'+top+'px','aria-label':c.up?RANKS[c.r]+SUITS[c.s]:'рубашка'});
+    if(c.up) el.innerHTML='<span>'+RANKS[c.r]+'</span><span class="sm">'+SUITS[c.s]+'</span><span class="big">'+SUITS[c.s]+'</span>';
+    el.addEventListener('click',()=>clickCard(k,p,i,false));
+    el.addEventListener('dblclick',()=>clickCard(k,p,i,true));
+    return el;
+  }
+  function draw(){
+    board.innerHTML='';
+    const top=h('div',{class:'sol-r'});
+    const st=h('div',{class:'pile'});
+    st.append(stock.length?cardEl({r:1,s:0,up:false},'s',0,0,0):h('button',{class:'slot',html:ico('refresh',20)}));
+    st.addEventListener('click',()=>clickPile('stock'));
+    const ws=h('div',{class:'pile'});
+    if(waste.length) ws.append(cardEl(waste[waste.length-1],'w',0,waste.length-1,0));
+    else ws.append(h('div',{class:'slot'}));
+    top.append(st,ws,h('div',{style:'width:26px;flex:0 0 auto'}));
+    found.forEach((f,i)=>{
+      const pe=h('div',{class:'pile'});
+      if(f.length) pe.append(cardEl(f[f.length-1],'f',i,f.length-1,0));
+      else pe.append(h('button',{class:'slot',html:'<span style="font-size:22px">'+SUITS[i]+'</span>'}));
+      pe.addEventListener('click',e=>{ if(!e.target.closest('.pcard')) clickPile('found',i); });
+      top.append(pe);
+    });
+    const row=h('div',{class:'sol-t'});
+    tab.forEach((pile,i)=>{
+      const pe=h('div',{class:'pile'});
+      let y=0;
+      if(!pile.length) pe.append(h('div',{class:'slot'}));
+      pile.forEach((c,j)=>{ pe.append(cardEl(c,'t',i,j,y)); y+=c.up?24:11; });
+      pe.style.minHeight=(y+94)+'px';
+      pe.addEventListener('click',e=>{ if(!e.target.closest('.pcard')) clickPile('tab',i); });
+      row.append(pe);
+    });
+    info.innerHTML='';
+    const secs=t0?Math.round((Date.now()-t0)/1000):0;
+    info.append(...[h('span',{},'Ходов: '+moves),h('span',{},'Время: '+secs+' с'),
+      h('span',{},'В доме: '+found.reduce((a,f)=>a+f.length,0)+' из 52'),
+      state.solBest?h('span',{},'рекорд: '+state.solBest.t+' с'):null].filter(Boolean));
+    board.append(top,row,h('div',{class:'sol-b'},info));
+    bUndo.disabled=!hist.length;
+  }
+  win.api.onClose=()=>{ if(timer) clearInterval(timer); };
+  deal();
+}
+
+/* ================= браузер ================= */
+const PAGE_CSS='body{margin:0;font:15px/1.65 -apple-system,"Segoe UI",system-ui,sans-serif;color:#17201f;background:#fbfaf7;padding:28px 30px 40px}'+
+ 'h1{font-size:27px;margin:0 0 6px;letter-spacing:-.02em}h2{font-size:17px;margin:26px 0 8px}'+
+ 'p{margin:0 0 12px;max-width:66ch}a{color:#0b7f77;text-decoration:none;border-bottom:1px solid rgba(11,127,119,.35)}'+
+ 'a:hover{background:rgba(11,127,119,.08)}ul{margin:0 0 14px;padding-left:20px;max-width:66ch}li{margin:4px 0}'+
+ 'code,pre{font-family:ui-monospace,"JetBrains Mono",Consolas,monospace}'+
+ 'pre{background:#fff;border:1px solid #e3e6e4;border-radius:10px;padding:14px 16px;overflow:auto;font-size:13px;line-height:1.6}'+
+ '.hero{background:linear-gradient(140deg,#0e5f5a,#13333f);color:#fff;border-radius:16px;padding:26px 28px;margin-bottom:22px}'+
+ '.hero h1{color:#fff}.hero p{color:rgba(255,255,255,.82);margin:0}'+
+ '.tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin:0 0 18px;padding:0;list-style:none}'+
+ '.tiles li{margin:0}.tiles a{display:block;border:1px solid #e3e6e4;border-radius:12px;padding:14px 15px;background:#fff;border-bottom-color:#e3e6e4}'+
+ '.tiles b{display:block;margin-bottom:3px}.tiles span{color:#5d6b68;font-size:13px}'+
+ 'table{border-collapse:collapse;font-size:14px}td,th{border-bottom:1px solid #e6e9e7;padding:6px 14px 6px 0;text-align:left}'+
+ 'img{max-width:100%;border-radius:10px}';
+function mdToHtml(t){
+  const esc=x=>x.replace(/&/g,'&amp;').replace(/</g,'&lt;');
+  return esc(t).split(/\n{2,}/).map(b=>{
+    const m=/^(#{1,3})\s+(.*)$/.exec(b.trim());
+    if(m) return '<h'+m[1].length+'>'+m[2]+'</h'+m[1].length+'>';
+    if(/^\s*[-*]\s+/m.test(b)) return '<ul>'+b.split('\n').map(l=>l.replace(/^\s*[-*]\s+/,'')).filter(Boolean).map(l=>'<li>'+l.replace(/\[x\]/gi,'✔').replace(/\[ \]/g,'◻')+'</li>').join('')+'</ul>';
+    return '<p>'+b.replace(/\n/g,'<br>').replace(/\*\*(.+?)\*\*/g,'<b>$1</b>').replace(/`(.+?)`/g,'<code>$1</code>')+'</p>';
+  }).join('\n');
+}
+function listHtmlFiles(){
+  const out=[];
+  (function walk(n,pre){
+    for(const k of Object.keys(n.c)){
+      const ch=n.c[k];
+      if(ch.t==='d') walk(ch,pre.concat(k));
+      else out.push(pre.concat(k));
+    }
+  })(fs,[]);
+  return out;
+}
+function mountBrowser(win,arg){
+  const hist=[]; let hi=-1;
+  const ifr=h('iframe',{sandbox:'allow-same-origin',title:'Страница'});
+  const url=h('input',{spellcheck:'false','aria-label':'Адрес',value:''});
+  const bBack=h('button',{class:'btn',title:'Назад',html:ico('back',15)});
+  const bFwd=h('button',{class:'btn',title:'Вперёд',html:ico('right',15)});
+  const bRel=h('button',{class:'btn',title:'Обновить',html:ico('refresh',15)});
+  const marks=h('div',{class:'br-b'});
+  win.body.append(h('div',{class:'br'},
+    h('div',{class:'br-c'},bBack,bFwd,bRel,h('div',{class:'br-u'},h('span',{class:'row',style:'color:var(--txt-2)',html:ico('globe',15)}),url),
+      h('button',{class:'btn pri',onclick:()=>go(url.value)},'Открыть')),
+    marks,ifr));
+  [['fenestra://start','Старт','globe'],['fenestra://about','О системе','info'],['fenestra://files','Файлы','folder'],
+   ['file:///Рабочий стол/привет.txt','привет.txt','file']].forEach(([u,t,i])=>
+    marks.append(h('button',{onclick:()=>go(u),html:ico(i,14)+'<span>'+t+'</span>'})));
+  marks.append(h('button',{onclick:()=>makePage(),html:ico('plus',14)+'<span>Создать страницу</span>'}));
+  function makePage(){
+    const dir=node(['Документы']);
+    const nm=uniqueName(dir,'страница.html');
+    dir.c[nm]={t:'f',body:'<!doctype html>\n<html lang="ru">\n<meta charset="utf-8">\n<title>Моя страница</title>\n<style>\n  body{font-family:system-ui,sans-serif;max-width:40em;margin:40px auto;padding:0 20px;line-height:1.6}\n  h1{color:#0b7f77}\n</style>\n<h1>Моя первая страница</h1>\n<p>Этот файл лежит в папке «Документы». Откройте его в Блокноте, поменяйте текст,\n   сохраните — и нажмите «Обновить» в браузере.</p>\n<p>Браузер показывает разметку и стили, скрипты в нём отключены.</p>\n'};
+    fsChanged();
+    go('file:///Документы/'+nm);
+    toast('Создан файл Документы/'+nm);
+  }
+  function page(u){
+    if(u==='fenestra://start'||u==='fenestra://'||!u) return {t:'Фенестрит · старт',h:
+      '<div class="hero"><h1>Фенестрит</h1><p>Браузер, который живёт внутри Фенестры и показывает её собственные файлы.</p></div>'+
+      '<ul class="tiles">'+
+      '<li><a href="fenestra://about"><b>О системе</b><span>Что это вообще такое</span></a></li>'+
+      '<li><a href="fenestra://files"><b>Файлы</b><span>Всё, что лежит на диске C:</span></a></li>'+
+      '<li><a href="file:///Рабочий стол/привет.txt"><b>привет.txt</b><span>Краткая инструкция</span></a></li>'+
+      '<li><a href="file:///Документы/борщ.txt"><b>борщ.txt</b><span>Рецепт, проверенный временем</span></a></li></ul>'+
+      '<h2>Как это работает</h2><p>Адрес <code>file:///путь</code> открывает файл из проводника: '+
+      'HTML показывается как страница, текст и Markdown — как документ, картинки — как картинки. '+
+      'Скрипты внутри страниц отключены, поэтому браузер безопасен даже для ваших собственных экспериментов.</p>'};
+    if(u==='fenestra://about') return {t:'О системе',h:
+      '<h1>Фенестра '+state.ver+'</h1><p>Оболочка рабочего стола, которая целиком помещается в один HTML-файл: '+
+      'установщик, окна, панель задач, приложения, синий экран и среда восстановления.</p>'+
+      '<h2>Сведения</h2><table><tr><th>Сборка</th><td>'+BUILD[state.ver]+'</td></tr>'+
+      '<tr><th>Пользователь</th><td>'+state.user+'</td></tr>'+
+      '<tr><th>Активация</th><td>'+(state.activated?'активировано':'не активировано')+'</td></tr>'+
+      '<tr><th>Диск</th><td>'+state.disk+'</td></tr>'+
+      '<tr><th>Окон открыто</th><td>'+wins.size+'</td></tr></table>'+
+      '<h2>Сочетания клавиш</h2><ul><li><code>Win</code> — меню «Пуск»</li><li><code>Win+R</code> — выполнить</li>'+
+      '<li><code>Ctrl+Alt+Del</code> — диспетчер задач</li><li><code>Alt+Tab</code> — переключение окон</li>'+
+      '<li><code>F8</code> при загрузке — среда восстановления</li></ul>'};
+    if(u==='fenestra://files'){
+      const rows=listHtmlFiles().map(p2=>'<li><a href="file:///'+p2.join('/')+'">'+p2.join(' / ')+'</a></li>').join('');
+      return {t:'Файлы',h:'<h1>Файлы на диске</h1><p>Всё, что сейчас лежит в проводнике.</p><ul>'+rows+'</ul>'};
+    }
+    if(u.startsWith('file:///')){
+      const path=decodeURIComponent(u.slice(8)).split('/').filter(Boolean);
+      const n=node(path);
+      if(!n) return {t:'Не найдено',h:'<h1>Страница не найдена</h1><p>Файла <code>'+path.join('/')+'</code> нет на диске. '+
+        'Посмотрите <a href="fenestra://files">список файлов</a>.</p>'};
+      if(n.t==='d') return {t:path[path.length-1]||'Папка',h:'<h1>'+(path[path.length-1]||'Диск')+'</h1><ul>'+
+        Object.keys(n.c).map(k=>'<li><a href="file:///'+path.concat(k).join('/')+'">'+k+'</a></li>').join('')+'</ul>'};
+      const nm=path[path.length-1],ext=(nm.split('.').pop()||'').toLowerCase();
+      if(n.data) return {t:nm,h:'<h1>'+nm+'</h1><img src="'+n.data+'" alt="'+nm+'">'};
+      if(ext==='html'||ext==='htm') return {t:nm,raw:n.body};
+      if(ext==='md') return {t:nm,h:mdToHtml(n.body||'')};
+      return {t:nm,h:'<h1>'+nm+'</h1><pre>'+(n.body||'').replace(/&/g,'&amp;').replace(/</g,'&lt;')+'</pre>'};
+    }
+    return {t:'Ошибка адреса',h:'<h1>Неизвестный адрес</h1><p>Фенестрит понимает адреса <code>fenestra://start</code>, '+
+      '<code>fenestra://about</code>, <code>fenestra://files</code> и <code>file:///путь/к/файлу</code>.</p>'+
+      '<p>Настоящего интернета здесь нет: система работает без сети.</p>'};
+  }
+  function render(u){
+    const pg=page(u);
+    ifr.srcdoc=pg.raw!==undefined?pg.raw:'<!doctype html><html lang="ru"><meta charset="utf-8"><style>'+PAGE_CSS+'</style><body>'+pg.h+'</body></html>';
+    win.setTitle(pg.t+' — Фенестрит');
+    url.value=u;
+  }
+  function go(u,push){
+    u=(u||'').trim();
+    if(!u) return;
+    if(!/^(fenestra|file):/.test(u)) u=node(u.replace(/^\/+/,'').split('/').filter(Boolean))?'file:///'+u.replace(/^\/+/,''):'fenestra://'+u.replace(/^\/+/,'');
+    if(push!==false){ hist.splice(hi+1); hist.push(u); hi=hist.length-1; }
+    render(u); sync();
+  }
+  function sync(){ bBack.disabled=hi<=0; bFwd.disabled=hi>=hist.length-1; }
+  bBack.onclick=()=>{ if(hi>0){ hi--; render(hist[hi]); sync(); } };
+  bFwd.onclick=()=>{ if(hi<hist.length-1){ hi++; render(hist[hi]); sync(); } };
+  bRel.onclick=()=>render(hist[hi]||'fenestra://start');
+  url.onkeydown=e=>{ if(e.key==='Enter') go(url.value); };
+  ifr.addEventListener('load',()=>{
+    try{
+      const d=ifr.contentDocument; if(!d) return;
+      d.querySelectorAll('a[href]').forEach(a=>a.addEventListener('click',e=>{ e.preventDefault(); go(a.getAttribute('href')); }));
+    }catch(e){}
+  });
+  win.api.go=u=>go(u);
+  go(arg&&arg.url?arg.url:'fenestra://start');
+}
+
+/* ================= часы ================= */
+const ZONES=[['Москва','Europe/Moscow'],['Лондон','Europe/London'],['Нью-Йорк','America/New_York'],['Токио','Asia/Tokyo']];
+function mountClock(win){
+  let tab='clock',timer=null;
+  let tEnd=0,tLeft=0,tRun=false,tTotal=300;
+  let sw=0,swRun=false,swLast=0,laps=[];
+  const tabs=h('div',{class:'ck-t'}),body=h('div',{class:'ck-b'});
+  win.body.append(h('div',{class:'ck'},tabs,body));
+  [['clock','Часы'],['alarm','Будильник'],['timer','Таймер'],['stop','Секундомер']].forEach(([k,l])=>
+    tabs.append(h('button',{class:tab===k?'on':'',onclick:()=>{ tab=k; render(); }},l)));
+  const two=n=>String(n).padStart(2,'0');
+  const hms=ms=>{ const t=Math.max(0,Math.round(ms/100)); return two((t/600|0))+':'+two(((t/10)|0)%60)+','+(t%10); };
+  function render(){
+    [...tabs.children].forEach((b,i)=>b.classList.toggle('on',['clock','alarm','timer','stop'][i]===tab));
+    body.innerHTML='';
+    if(tab==='clock'){
+      const big=h('div',{class:'ck-big'}),sub=h('div',{class:'ck-sub'}),list=h('div',{class:'ck-w'});
+      ZONES.forEach(([nm,tz])=>list.append(h('div',{class:'ck-wr'},
+        h('span',{class:'row',style:'color:var(--acc)',html:ico('globe',15)}),nm,
+        h('b',{'data-tz':tz},''))));
+      body.append(big,sub,list);
+      win.api.upd=()=>{
+        const n=new Date();
+        big.textContent=n.toLocaleTimeString('ru-RU',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+        sub.textContent=n.toLocaleDateString('ru-RU',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+        list.querySelectorAll('b[data-tz]').forEach(b=>{
+          try{ b.textContent=n.toLocaleTimeString('ru-RU',{timeZone:b.dataset.tz,hour:'2-digit',minute:'2-digit'}); }catch(e){ b.textContent='—'; }
+        });
+      };
+    } else if(tab==='alarm'){
+      const a=state.alarm||{at:7*60,on:false};
+      const inp=h('input',{type:'time',class:'fld',style:'font-size:22px;font-family:var(--f-mono)',value:two((a.at/60)|0)+':'+two(a.at%60)});
+      const ch=h('input',{type:'checkbox',style:'width:18px;height:18px;accent-color:var(--acc)'});
+      ch.checked=!!a.on;
+      const st=h('div',{class:'ck-sub'});
+      const upd=()=>{
+        const [hh2,mm]=inp.value.split(':').map(Number);
+        state.alarm={at:(hh2||0)*60+(mm||0),on:ch.checked,last:-1};
+        save();
+        const now=new Date(),cur=now.getHours()*60+now.getMinutes();
+        let d=state.alarm.at-cur; if(d<=0) d+=1440;
+        st.textContent=ch.checked?('Прозвенит через '+((d/60)|0)+' ч '+(d%60)+' мин'):'Будильник выключен';
+      };
+      inp.onchange=upd; ch.onchange=upd;
+      body.append(h('div',{class:'ck-big'},'Будильник'),inp,
+        h('label',{class:'row',style:'gap:9px;cursor:pointer'},ch,h('span',{},'Включить')),st,
+        h('p',{class:'lead',style:'max-width:34ch;text-align:center'},'Сигнал прозвучит, даже если окно закрыто, — пока открыта вкладка. Громкость берётся из настроек звука.'));
+      upd();
+      win.api.upd=null;
+    } else if(tab==='timer'){
+      const ring=h('div',{class:'ring'},h('b',{},'05:00'));
+      const mi=h('input',{type:'number',class:'fld',min:'0',max:'99',value:String((tTotal/60)|0),style:'width:72px;text-align:center'});
+      const si=h('input',{type:'number',class:'fld',min:'0',max:'59',value:String(tTotal%60),style:'width:72px;text-align:center'});
+      const go=h('button',{class:'btn pri'},tRun?'Пауза':'Старт');
+      const rs=h('button',{class:'btn'},'Сброс');
+      go.onclick=()=>{
+        if(tRun){ tRun=false; tLeft=tEnd-Date.now(); }
+        else {
+          if(tLeft<=0){ tTotal=(+mi.value||0)*60+(+si.value||0); tLeft=tTotal*1000; }
+          if(tLeft<=0) return;
+          tEnd=Date.now()+tLeft; tRun=true;
+        }
+        render();
+      };
+      rs.onclick=()=>{ tRun=false; tLeft=0; tTotal=(+mi.value||0)*60+(+si.value||0); render(); };
+      body.append(ring,h('div',{class:'row',style:'gap:8px'},mi,h('span',{},':'),si),
+        h('div',{class:'row',style:'gap:8px'},go,rs),
+        h('p',{class:'lead'},'По нулю таймер подаст сигнал и покажет уведомление.'));
+      win.api.upd=()=>{
+        const left=tRun?Math.max(0,tEnd-Date.now()):tLeft;
+        const secs=Math.ceil(left/1000);
+        ring.querySelector('b').textContent=two((secs/60)|0)+':'+two(secs%60);
+        ring.style.setProperty('--p',tTotal?(100-left/(tTotal*1000)*100):0);
+        if(tRun&&left<=0){
+          tRun=false; tLeft=0;
+          toast('Таймер: время вышло');
+          let n=0; const r2=setInterval(()=>{ blip(n%2?740:990,.22,.3,'triangle'); if(++n>5) clearInterval(r2); },300);
+          render();
+        }
+      };
+    } else {
+      const big=h('div',{class:'ck-big'},'00:00,0');
+      const go=h('button',{class:'btn pri'},swRun?'Стоп':'Старт');
+      const lp=h('button',{class:'btn'},'Круг');
+      const rs=h('button',{class:'btn'},'Сброс');
+      const list=h('div',{class:'laps'});
+      go.onclick=()=>{ swRun=!swRun; swLast=Date.now(); render(); };
+      lp.onclick=()=>{ if(swRun){ laps.unshift(sw); render(); } };
+      rs.onclick=()=>{ swRun=false; sw=0; laps=[]; render(); };
+      laps.forEach((l,i)=>list.append(h('div',{},h('span',{},'Круг '+(laps.length-i)),h('b',{},hms(l)))));
+      body.append(big,h('div',{class:'row',style:'gap:8px'},go,lp,rs),list);
+      win.api.upd=()=>{
+        if(swRun){ const now=Date.now(); sw+=now-swLast; swLast=now; }
+        big.textContent=hms(sw);
+      };
+    }
+    if(win.api.upd) win.api.upd();
+  }
+  timer=setInterval(()=>{ if(win.api.upd) win.api.upd(); },100);
+  win.api.onClose=()=>clearInterval(timer);
+  render();
+}
+
+/* ================= регистрация новых приложений ================= */
+Object.assign(APPS,{
+  solitaire:{title:'Косынка',icon:'cards',w:720,h:620,single:true,mount:mountSolitaire},
+  browser:{title:'Браузер',icon:'globe',w:780,h:560,mount:mountBrowser},
+  clock:{title:'Часы',icon:'clockic',w:420,h:520,single:true,mount:mountClock},
+  update:{title:'Центр обновления',icon:'update',w:580,h:500,single:true,mount:mountUpdate}
+});
+
 try{
   const hot=W.claude&&W.claude.hot;
   if(hot&&hot.snapshot) hot.snapshot(()=>({s:state,fs:fs,bin:bin}));
